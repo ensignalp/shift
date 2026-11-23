@@ -204,7 +204,7 @@ impl HostsPage {
         let spacer = gtk4::Box::new(gtk4::Orientation::Horizontal, 0);
         spacer.set_hexpand(true);
         header.append(&spacer);
-        let btn_new = widgets::icon_label_button(&["list-add-symbolic"], "Yeni sunucu");
+        let btn_new = widgets::icon_label_button(icons::ADD, "Yeni sunucu");
         btn_new.add_css_class("accent");
         header.append(&btn_new);
         main.append(&header);
@@ -213,7 +213,7 @@ impl HostsPage {
         let omni_row = gtk4::Box::new(gtk4::Orientation::Horizontal, 8);
         let omnibox = gtk4::Entry::builder()
             .placeholder_text("Hızlı bağlan: kullanıcı@adres:port   (ör. sftp://root@192.168.1.10)")
-            .primary_icon_name(icons::pick(icons::SERVER))
+            .primary_icon_name(icons::pick(icons::QUICK))
             .hexpand(true)
             .css_classes(["omnibox"])
             .build();
@@ -502,7 +502,7 @@ impl HostsPage {
             .build();
         let title = gtk4::Label::builder().label("Yeni sunucu").xalign(0.0).hexpand(true).css_classes(["page-title"]).build();
         head.append(&title);
-        let btn_close = gtk4::Button::from_icon_name("window-close-symbolic");
+        let btn_close = gtk4::Button::from_icon_name(crate::ui::icons::pick(crate::ui::icons::CLOSE));
         btn_close.add_css_class("flat");
         btn_close.set_tooltip_text(Some("Kapat"));
         btn_close.set_widget_name("close");

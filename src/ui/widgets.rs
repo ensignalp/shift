@@ -111,7 +111,7 @@ impl Toaster {
     pub fn new() -> Self {
         let overlay = gtk4::Overlay::new();
         let label = gtk4::Label::builder().wrap(true).max_width_chars(60).build();
-        let close = gtk4::Button::from_icon_name("window-close-symbolic");
+        let close = gtk4::Button::from_icon_name(crate::ui::icons::pick(crate::ui::icons::CLOSE));
         close.add_css_class("flat");
         let b = gtk4::Box::new(gtk4::Orientation::Horizontal, 12);
         b.add_css_class("app-notification");

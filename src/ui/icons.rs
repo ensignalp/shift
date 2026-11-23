@@ -1,34 +1,36 @@
-//! Standard freedesktop icon names, resolved against the user's icon theme.
-//!
-//! Each constant lists candidates in order of preference. `pick` returns the
-//! first one the active icon theme (Adwaita, Breeze, elementary, Papirus...)
-//! actually provides, so icons always follow the desktop's look.
+//! Shift's icon set: Phosphor Icons (regular weight, MIT licence, see
+//! data/icons/shift/LICENSE-phosphor), bundled as `shift-*-symbolic` so GTK
+//! recolours them with the text colour and they never shadow the desktop's
+//! own icon names. Each constant keeps a freedesktop fallback.
 
-pub const SERVER: &[&str] = &["network-server-symbolic"];
-pub const BACK: &[&str] = &["go-previous-symbolic"];
-pub const FORWARD: &[&str] = &["go-next-symbolic"];
-pub const UP: &[&str] = &["go-up-symbolic"];
-pub const REFRESH: &[&str] = &["view-refresh-symbolic"];
-pub const FOLDER: &[&str] = &["folder-symbolic"];
-pub const FOLDER_OPEN: &[&str] = &["folder-open-symbolic", "document-open-symbolic"];
-pub const FOLDER_NEW: &[&str] = &["folder-new-symbolic", "list-add-symbolic"];
-pub const FILE: &[&str] = &["text-x-generic-symbolic"];
-pub const ARCHIVE: &[&str] = &["package-x-generic-symbolic", "text-x-generic-symbolic"];
-pub const IMAGE: &[&str] = &["image-x-generic-symbolic", "text-x-generic-symbolic"];
-pub const UPLOAD: &[&str] = &["document-send-symbolic", "go-up-symbolic"];
-pub const DOWNLOAD: &[&str] = &["folder-download-symbolic", "document-save-symbolic"];
-pub const TRANSFERS: &[&str] = &["folder-download-symbolic", "document-save-symbolic"];
-pub const RENAME: &[&str] = &["document-edit-symbolic", "edit-rename-symbolic"];
-pub const DELETE: &[&str] = &["user-trash-symbolic", "edit-delete-symbolic"];
-pub const SHOW_HIDDEN: &[&str] = &["view-reveal-symbolic", "view-visible-symbolic"];
-pub const HIDE_HIDDEN: &[&str] = &["view-conceal-symbolic", "view-hidden-symbolic"];
-pub const COPY: &[&str] = &["edit-copy-symbolic"];
-pub const CLEAR: &[&str] = &["edit-clear-all-symbolic", "edit-clear-symbolic"];
-pub const TERMINAL: &[&str] = &["utilities-terminal-symbolic"];
-pub const SEPARATOR: &[&str] = &["pan-end-symbolic", "go-next-symbolic"];
+pub const SERVER: &[&str] = &["shift-server-symbolic", "network-server-symbolic"];
+pub const BACK: &[&str] = &["shift-back-symbolic", "go-previous-symbolic"];
+pub const FORWARD: &[&str] = &["shift-forward-symbolic", "go-next-symbolic"];
+pub const UP: &[&str] = &["shift-up-symbolic", "go-up-symbolic"];
+pub const REFRESH: &[&str] = &["shift-refresh-symbolic", "view-refresh-symbolic"];
+pub const FOLDER: &[&str] = &["shift-folder-symbolic", "folder-symbolic"];
+pub const FOLDER_OPEN: &[&str] = &["shift-folder-open-symbolic", "folder-open-symbolic"];
+pub const FOLDER_NEW: &[&str] = &["shift-folder-new-symbolic", "folder-new-symbolic"];
+pub const FILE: &[&str] = &["shift-file-text-symbolic", "text-x-generic-symbolic"];
+pub const ARCHIVE: &[&str] = &["shift-archive-symbolic", "package-x-generic-symbolic"];
+pub const IMAGE: &[&str] = &["shift-image-symbolic", "image-x-generic-symbolic"];
+pub const UPLOAD: &[&str] = &["shift-upload-symbolic", "document-send-symbolic"];
+pub const DOWNLOAD: &[&str] = &["shift-download-symbolic", "folder-download-symbolic"];
+pub const TRANSFERS: &[&str] = &["shift-transfers-symbolic", "folder-download-symbolic"];
+pub const RENAME: &[&str] = &["shift-rename-symbolic", "document-edit-symbolic"];
+pub const DELETE: &[&str] = &["shift-delete-symbolic", "user-trash-symbolic"];
+pub const SHOW_HIDDEN: &[&str] = &["shift-show-hidden-symbolic", "view-reveal-symbolic"];
+pub const HIDE_HIDDEN: &[&str] = &["shift-hide-hidden-symbolic", "view-conceal-symbolic"];
+pub const COPY: &[&str] = &["shift-copy-symbolic", "edit-copy-symbolic"];
+pub const CLEAR: &[&str] = &["shift-clear-symbolic", "edit-clear-all-symbolic"];
+pub const TERMINAL: &[&str] = &["shift-terminal-symbolic", "utilities-terminal-symbolic"];
+pub const SEPARATOR: &[&str] = &["shift-separator-symbolic", "pan-end-symbolic"];
+pub const ADD: &[&str] = &["shift-add-symbolic", "list-add-symbolic"];
+pub const SETTINGS: &[&str] = &["shift-settings-symbolic", "emblem-system-symbolic"];
+pub const CLOSE: &[&str] = &["shift-close-symbolic", "window-close-symbolic"];
+pub const QUICK: &[&str] = &["shift-quick-symbolic", "network-server-symbolic"];
 
-/// First candidate present in the current icon theme, else the first candidate
-/// (GTK then shows its own "missing" fallback rather than crashing).
+/// First candidate present in the icon theme (bundled icons included).
 pub fn pick(candidates: &[&'static str]) -> &'static str {
     if let Some(display) = gtk4::gdk::Display::default() {
         let theme = gtk4::IconTheme::for_display(&display);

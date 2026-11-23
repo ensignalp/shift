@@ -537,7 +537,7 @@ fn build_ui(app: &gtk4::Application) {
         .direction(gtk4::ArrowType::Up)
         .build();
     let srow = gtk4::Box::new(gtk4::Orientation::Horizontal, 12);
-    srow.append(&gtk4::Image::from_icon_name(icons::pick(&["emblem-system-symbolic", "preferences-system-symbolic", "open-menu-symbolic"])));
+    srow.append(&gtk4::Image::from_icon_name(icons::pick(icons::SETTINGS)));
     srow.append(&gtk4::Label::builder().label("Ayarlar").xalign(0.0).hexpand(true).build());
     settings_btn.set_child(Some(&srow));
     sidebar.append(&settings_btn);
