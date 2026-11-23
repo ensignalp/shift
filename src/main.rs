@@ -511,6 +511,7 @@ fn build_ui(app: &gtk4::Application) {
                 AppEvent::Connected(server_str, items) => {
                     title_event.set_label(&server_str);
                     win_title_event.set_title(Some(&format!("{} — Shift", server_str)));
+                    gtk4::prelude::GtkWindowExt::set_focus(&win_title_event, None::<&gtk4::Widget>);
                     btn_disc_event.set_visible(true);
                     btn_sites_event.set_visible(false);
                     exp_event.set_items("/", items);
@@ -635,7 +636,6 @@ fn build_ui(app: &gtk4::Application) {
             .version(env!("CARGO_PKG_VERSION"))
             .comments("Yüksek performanslı, güvenli ve modern bulut dosya aktarım istemcisi.")
             .website("https://ensignsoft.com")
-            .license_type(gtk4::License::Gpl20)
             .build();
         dialog.present();
     });
@@ -728,6 +728,16 @@ fn apply_color_scheme(settings: &gtk4::Settings, mode: &str, original: &(Option<
 /// Debug aid: SHIFT_SNAPSHOT=/tmp/x.png renders the window to a PNG and quits.
 fn debug_snapshot(window: &gtk4::ApplicationWindow, path: String) {
     let window = window.clone();
+    // SHIFT_ACTION=<app action> (e.g. site-manager, about) is triggered first;
+    // every visible toplevel is then saved (<path>, <path>.1.png, ...).
+    if let Ok(action) = std::env::var("SHIFT_ACTION") {
+        let app = window.application();
+        glib::timeout_add_local_once(std::time::Duration::from_millis(300), move || {
+            if let Some(app) = app {
+                app.activate_action(&action, None);
+            }
+        });
+    }
     let delay = std::env::var("SHIFT_SNAPSHOT_DELAY").ok().and_then(|v| v.parse().ok()).unwrap_or(1500);
     glib::timeout_add_local_once(std::time::Duration::from_millis(delay), move || {
         if std::env::var("SHIFT_DUMP_TREE").is_ok() {
@@ -740,13 +750,24 @@ fn debug_snapshot(window: &gtk4::ApplicationWindow, path: String) {
             }
             dump(window.upcast_ref(), 0, window.upcast_ref());
         }
-        let paintable = gtk4::WidgetPaintable::new(Some(&window));
-        let (w, h) = (window.width() as f64, window.height() as f64);
-        let snap = gtk4::Snapshot::new();
-        paintable.snapshot(&snap, w, h);
-        if let (Some(node), Some(renderer)) = (snap.to_node(), window.native().and_then(|n| n.renderer())) {
-            let texture = renderer.render_texture(&node, None);
-            let _ = texture.save_to_png(&path);
+        let mut wins: Vec<gtk4::Window> = vec![window.clone().upcast()];
+        let tops = gtk4::Window::list_toplevels();
+        for t in tops {
+            if let Ok(w) = t.downcast::<gtk4::Window>() {
+                if w.is_visible() && w != *window.upcast_ref::<gtk4::Window>() {
+                    wins.push(w);
+                }
+            }
+        }
+        for (i, w) in wins.iter().enumerate() {
+            let paintable = gtk4::WidgetPaintable::new(Some(w));
+            let snap = gtk4::Snapshot::new();
+            paintable.snapshot(&snap, w.width() as f64, w.height() as f64);
+            if let (Some(node), Some(renderer)) = (snap.to_node(), w.native().and_then(|n| n.renderer())) {
+                let texture = renderer.render_texture(&node, None);
+                let out = if i == 0 { path.clone() } else { format!("{}.{}.png", path, i) };
+                let _ = texture.save_to_png(&out);
+            }
         }
         if let Some(app) = window.application() {
             app.quit();

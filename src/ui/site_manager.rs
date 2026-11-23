@@ -101,6 +101,7 @@ impl SiteManagerWindow {
         btn_browse_key.set_tooltip_text(Some("Anahtar dosyası seç"));
         key_box.append(&btn_browse_key);
         sec_auth.row("SSH anahtarı", &key_box);
+        FormSection::align(&[&sec_profile, &sec_server, &sec_auth]);
         notebook.append_page(&page(&[&sec_profile, &sec_server, &sec_auth]), Some(&gtk4::Label::new(Some("Genel"))));
 
         // --- Gelişmiş ---

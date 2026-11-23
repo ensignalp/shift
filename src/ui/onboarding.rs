@@ -145,11 +145,14 @@ impl OnboardingView {
         container.append(&scrolled);
 
         // Enter in the quick-connect form triggers "Bağlan"
+        // and initial focus goes to the server field.
         let btn_default = btn_primary.clone();
-        content_box.connect_realize(move |w| {
+        let host_focus = host_entry.clone();
+        content_box.connect_map(move |w| {
             if let Some(win) = w.root().and_downcast::<gtk4::Window>() {
                 win.set_default_widget(Some(&btn_default));
             }
+            host_focus.grab_focus();
         });
 
         // Port auto-update on protocol change

@@ -51,6 +51,7 @@ pub struct FormSection {
     pub root: gtk4::Box,
     grid: gtk4::Grid,
     rows: RefCell<i32>,
+    labels: RefCell<Vec<gtk4::Label>>,
 }
 
 impl FormSection {
@@ -64,7 +65,7 @@ impl FormSection {
         }
         let grid = gtk4::Grid::builder().row_spacing(8).column_spacing(12).margin_top(4).build();
         root.append(&grid);
-        Self { root, grid, rows: RefCell::new(0) }
+        Self { root, grid, rows: RefCell::new(0), labels: RefCell::new(Vec::new()) }
     }
 
     pub fn row(&self, label: &str, widget: &impl IsA<gtk4::Widget>) {
@@ -73,7 +74,18 @@ impl FormSection {
         lbl.set_mnemonic_widget(Some(widget));
         self.grid.attach(&lbl, 0, r, 1, 1);
         self.grid.attach(widget, 1, r, 1, 1);
+        self.labels.borrow_mut().push(lbl);
         *self.rows.borrow_mut() = r + 1;
+    }
+
+    /// Give the label column the same width across several sections.
+    pub fn align(sections: &[&FormSection]) {
+        let group = gtk4::SizeGroup::new(gtk4::SizeGroupMode::Horizontal);
+        for s in sections {
+            for l in s.labels.borrow().iter() {
+                group.add_widget(l);
+            }
+        }
     }
 
     /// A full-width row (check boxes, button rows).
