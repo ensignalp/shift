@@ -25,12 +25,12 @@ fn get_file_icon(name: &str) -> &'static str {
     let lower = name.to_lowercase();
     if lower.ends_with(".zip") || lower.ends_with(".tar") || lower.ends_with(".gz")
         || lower.ends_with(".xz") || lower.ends_with(".bz2") || lower.ends_with(".7z") {
-        "lucide-file-symbolic"
+        crate::ui::icons::pick(crate::ui::icons::ARCHIVE)
     } else if lower.ends_with(".png") || lower.ends_with(".jpg") || lower.ends_with(".jpeg")
         || lower.ends_with(".svg") || lower.ends_with(".webp") || lower.ends_with(".gif") {
-        "lucide-file-symbolic"
+        crate::ui::icons::pick(crate::ui::icons::IMAGE)
     } else {
-        "lucide-file-text-symbolic"
+        crate::ui::icons::pick(crate::ui::icons::FILE)
     }
 }
 
@@ -68,7 +68,7 @@ impl ExplorerView {
             .margin_bottom(8)
             .build();
 
-        let btn_back = gtk4::Button::from_icon_name("lucide-arrow-left-symbolic");
+        let btn_back = gtk4::Button::from_icon_name(crate::ui::icons::pick(crate::ui::icons::BACK));
         btn_back.add_css_class("flat");
         btn_back.add_css_class("circular");
         btn_back.add_css_class("nav-icon-btn");
@@ -76,7 +76,7 @@ impl ExplorerView {
         btn_back.set_sensitive(false);
         action_bar.append(&btn_back);
 
-        let btn_forward = gtk4::Button::from_icon_name("lucide-arrow-right-symbolic");
+        let btn_forward = gtk4::Button::from_icon_name(crate::ui::icons::pick(crate::ui::icons::FORWARD));
         btn_forward.add_css_class("flat");
         btn_forward.add_css_class("circular");
         btn_forward.add_css_class("nav-icon-btn");
@@ -84,7 +84,7 @@ impl ExplorerView {
         btn_forward.set_sensitive(false);
         action_bar.append(&btn_forward);
 
-        let btn_up = gtk4::Button::from_icon_name("lucide-arrow-up-symbolic");
+        let btn_up = gtk4::Button::from_icon_name(crate::ui::icons::pick(crate::ui::icons::UP));
         btn_up.add_css_class("flat");
         btn_up.add_css_class("circular");
         btn_up.add_css_class("nav-icon-btn");
@@ -105,7 +105,7 @@ impl ExplorerView {
             .css_classes(["suggested-action", "pill"])
             .build();
         let up_content = libadwaita::ButtonContent::builder()
-            .icon_name("lucide-upload-symbolic")
+            .icon_name(crate::ui::icons::pick(crate::ui::icons::UPLOAD))
             .label("Dosya Yükle")
             .build();
         btn_upload.set_child(Some(&up_content));
@@ -119,7 +119,7 @@ impl ExplorerView {
             .css_classes(["flat", "pill"])
             .build();
         let folder_content = libadwaita::ButtonContent::builder()
-            .icon_name("lucide-folder-plus-symbolic")
+            .icon_name(crate::ui::icons::pick(crate::ui::icons::FOLDER_NEW))
             .label("Yeni Klasör")
             .build();
         btn_new_folder.set_child(Some(&folder_content));
@@ -131,7 +131,7 @@ impl ExplorerView {
         action_bar.append(&btn_new_folder);
 
         // Refresh Button
-        let btn_refresh = gtk4::Button::from_icon_name("lucide-rotate-cw-symbolic");
+        let btn_refresh = gtk4::Button::from_icon_name(crate::ui::icons::pick(crate::ui::icons::REFRESH));
         btn_refresh.add_css_class("flat");
         btn_refresh.add_css_class("circular");
         btn_refresh.set_tooltip_text(Some("Dizini Yenile"));
@@ -151,7 +151,7 @@ impl ExplorerView {
 
         // Hidden files toggle
         let btn_hidden = gtk4::ToggleButton::builder()
-            .icon_name("lucide-eye-symbolic")
+            .icon_name(crate::ui::icons::pick(crate::ui::icons::SHOW_HIDDEN))
             .tooltip_text("Gizli Dosyaları Göster/Gizle")
             .css_classes(["flat", "circular"])
             .build();
@@ -392,7 +392,7 @@ impl ExplorerView {
                     // Open Folder
                     let on_nav_c = on_nav_ctx.clone();
                     let fp_c = full_path.clone();
-                    add_menu_item(&menu_box, &popover, "Klasörü Aç", "lucide-folder-open-symbolic", false, Box::new(move || {
+                    add_menu_item(&menu_box, &popover, "Klasörü Aç", crate::ui::icons::pick(crate::ui::icons::FOLDER_OPEN), false, Box::new(move || {
                         on_nav_c(fp_c.clone());
                     }));
                 } else {
@@ -406,7 +406,7 @@ impl ExplorerView {
                         permissions: "".into(),
                         path: full_path.clone(),
                     };
-                    add_menu_item(&menu_box, &popover, "Bilgisayara İndir", "lucide-download-symbolic", false, Box::new(move || {
+                    add_menu_item(&menu_box, &popover, "Bilgisayara İndir", crate::ui::icons::pick(crate::ui::icons::DOWNLOAD), false, Box::new(move || {
                         on_dl_c(file_it.clone());
                     }));
                 }
@@ -414,21 +414,21 @@ impl ExplorerView {
                 // Rename
                 let on_ren_c = on_ren_ctx.clone();
                 let fp_ren = full_path.clone();
-                add_menu_item(&menu_box, &popover, "Yeniden Adlandır", "lucide-pencil-symbolic", false, Box::new(move || {
+                add_menu_item(&menu_box, &popover, "Yeniden Adlandır", crate::ui::icons::pick(crate::ui::icons::RENAME), false, Box::new(move || {
                     on_ren_c(fp_ren.clone(), String::new());
                 }));
 
                 // Refresh
                 let on_nav_ref2 = on_nav_ctx.clone();
                 let cur_p2 = cur_p_ctx.borrow().clone();
-                add_menu_item(&menu_box, &popover, "Dizini Yenile", "lucide-rotate-cw-symbolic", false, Box::new(move || {
+                add_menu_item(&menu_box, &popover, "Dizini Yenile", crate::ui::icons::pick(crate::ui::icons::REFRESH), false, Box::new(move || {
                     on_nav_ref2(cur_p2.clone());
                 }));
 
                 // New Folder
                 let on_nf_c2 = on_nf_ctx.clone();
                 let cur_p3 = cur_p_ctx.borrow().clone();
-                add_menu_item(&menu_box, &popover, "Yeni Klasör Oluştur", "lucide-folder-plus-symbolic", false, Box::new(move || {
+                add_menu_item(&menu_box, &popover, "Yeni Klasör Oluştur", crate::ui::icons::pick(crate::ui::icons::FOLDER_NEW), false, Box::new(move || {
                     on_nf_c2(cur_p3.clone());
                 }));
 
@@ -437,26 +437,26 @@ impl ExplorerView {
                 // Delete
                 let on_del_c = on_del_ctx.clone();
                 let fp_del = full_path.clone();
-                add_menu_item(&menu_box, &popover, "Sil", "lucide-trash-symbolic", true, Box::new(move || {
+                add_menu_item(&menu_box, &popover, "Sil", crate::ui::icons::pick(crate::ui::icons::DELETE), true, Box::new(move || {
                     on_del_c(fp_del.clone(), is_dir);
                 }));
             } else {
                 // Background empty space click
                 let on_up_c3 = on_up_ctx.clone();
                 let cur_p_up_bg = cur_p_ctx.borrow().clone();
-                add_menu_item(&menu_box, &popover, "Dosya Yükle", "lucide-upload-symbolic", false, Box::new(move || {
+                add_menu_item(&menu_box, &popover, "Dosya Yükle", crate::ui::icons::pick(crate::ui::icons::UPLOAD), false, Box::new(move || {
                     on_up_c3(cur_p_up_bg.clone());
                 }));
 
                 let on_nf_c3 = on_nf_ctx.clone();
                 let cur_p4 = cur_p_ctx.borrow().clone();
-                add_menu_item(&menu_box, &popover, "Yeni Klasör Oluştur", "lucide-folder-plus-symbolic", false, Box::new(move || {
+                add_menu_item(&menu_box, &popover, "Yeni Klasör Oluştur", crate::ui::icons::pick(crate::ui::icons::FOLDER_NEW), false, Box::new(move || {
                     on_nf_c3(cur_p4.clone());
                 }));
 
                 let on_nav_ref3 = on_nav_ctx.clone();
                 let cur_p5 = cur_p_ctx.borrow().clone();
-                add_menu_item(&menu_box, &popover, "Dizini Yenile", "lucide-rotate-cw-symbolic", false, Box::new(move || {
+                add_menu_item(&menu_box, &popover, "Dizini Yenile", crate::ui::icons::pick(crate::ui::icons::REFRESH), false, Box::new(move || {
                     on_nav_ref3(cur_p5.clone());
                 }));
             }
@@ -502,9 +502,9 @@ impl ExplorerView {
             let active = btn.is_active();
             *exp_hid.show_hidden.borrow_mut() = active;
             if active {
-                btn_hid_ref.set_icon_name("lucide-eye-off-symbolic");
+                btn_hid_ref.set_icon_name(crate::ui::icons::pick(crate::ui::icons::HIDE_HIDDEN));
             } else {
-                btn_hid_ref.set_icon_name("lucide-eye-symbolic");
+                btn_hid_ref.set_icon_name(crate::ui::icons::pick(crate::ui::icons::SHOW_HIDDEN));
             }
             exp_hid.populate();
         });
@@ -558,7 +558,7 @@ impl ExplorerView {
                     (1, &"Üst Dizin"),
                     (2, &""),
                     (3, &""),
-                    (4, &"lucide-folder-symbolic"),
+                    (4, &crate::ui::icons::pick(crate::ui::icons::FOLDER)),
                     (5, &true),
                     (6, &parent),
                     (7, &0u64),
@@ -588,7 +588,7 @@ impl ExplorerView {
             };
 
             let icon = if it.is_dir {
-                "lucide-folder-symbolic"
+                crate::ui::icons::pick(crate::ui::icons::FOLDER)
             } else {
                 get_file_icon(&it.name)
             };
@@ -620,7 +620,7 @@ impl ExplorerView {
 
         let btn_root = gtk4::Button::builder().css_classes(["flat"]).build();
         let root_content = libadwaita::ButtonContent::builder()
-            .icon_name("lucide-server-symbolic")
+            .icon_name(crate::ui::icons::pick(crate::ui::icons::SERVER))
             .label("Sunucu Kökü")
             .build();
         btn_root.set_child(Some(&root_content));
@@ -633,7 +633,7 @@ impl ExplorerView {
 
         let parts: Vec<&str> = clean.split('/').collect();
         for p in parts {
-            let sep = gtk4::Image::from_icon_name("lucide-arrow-right-symbolic");
+            let sep = gtk4::Image::from_icon_name(crate::ui::icons::pick(crate::ui::icons::SEPARATOR));
             sep.set_pixel_size(12);
             sep.add_css_class("dim-label");
             self.path_box.append(&sep);

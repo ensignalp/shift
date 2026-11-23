@@ -79,7 +79,7 @@ impl SiteManagerWindow {
         let site_combo = libadwaita::ComboRow::builder()
             .title("Kayıtlı Siteler")
             .build();
-        site_combo.add_prefix(&gtk4::Image::from_icon_name("lucide-server-symbolic"));
+        site_combo.add_prefix(&gtk4::Image::from_icon_name(crate::ui::icons::pick(crate::ui::icons::SERVER)));
 
         let update_combo_model = {
             let site_combo = site_combo.clone();
@@ -99,7 +99,7 @@ impl SiteManagerWindow {
             .title("Profil / Site Adı")
             .text("Yeni Sunucu")
             .build();
-        site_name_row.add_prefix(&gtk4::Image::from_icon_name("lucide-pencil-symbolic"));
+        site_name_row.add_prefix(&gtk4::Image::from_icon_name(crate::ui::icons::pick(crate::ui::icons::RENAME)));
 
         let proto_row = libadwaita::ComboRow::builder()
             .title("Protokol")
@@ -109,46 +109,46 @@ impl SiteManagerWindow {
                 "FTPS - Güvenli TLS Şifrelemeli FTP (Port 21)"
             ]))
             .build();
-        proto_row.add_prefix(&gtk4::Image::from_icon_name("lucide-globe-symbolic"));
+        proto_row.add_prefix(&gtk4::Image::from_icon_name("network-workgroup-symbolic"));
 
         let host_row = libadwaita::EntryRow::builder()
             .title("Sunucu Adresi")
             .build();
-        host_row.add_prefix(&gtk4::Image::from_icon_name("lucide-server-symbolic"));
+        host_row.add_prefix(&gtk4::Image::from_icon_name(crate::ui::icons::pick(crate::ui::icons::SERVER)));
 
         let port_row = libadwaita::EntryRow::builder()
             .title("Port")
             .text("22")
             .build();
-        port_row.add_prefix(&gtk4::Image::from_icon_name("lucide-globe-symbolic"));
+        port_row.add_prefix(&gtk4::Image::from_icon_name("network-workgroup-symbolic"));
 
         let user_row = libadwaita::EntryRow::builder()
             .title("Kullanıcı Adı")
             .build();
-        user_row.add_prefix(&gtk4::Image::from_icon_name("lucide-user-symbolic"));
+        user_row.add_prefix(&gtk4::Image::from_icon_name("avatar-default-symbolic"));
 
         let password_row = libadwaita::PasswordEntryRow::builder()
             .title("Parola")
             .build();
-        password_row.add_prefix(&gtk4::Image::from_icon_name("lucide-lock-symbolic"));
+        password_row.add_prefix(&gtk4::Image::from_icon_name("dialog-password-symbolic"));
 
         let key_row = libadwaita::EntryRow::builder()
             .title("SSH Özel Anahtarı (.pem / .id_rsa)")
             .build();
-        key_row.add_prefix(&gtk4::Image::from_icon_name("lucide-key-symbolic"));
-        let btn_browse_key = gtk4::Button::from_icon_name("lucide-folder-open-symbolic");
+        key_row.add_prefix(&gtk4::Image::from_icon_name("dialog-password-symbolic"));
+        let btn_browse_key = gtk4::Button::from_icon_name(crate::ui::icons::pick(crate::ui::icons::FOLDER_OPEN));
         btn_browse_key.add_css_class("flat");
         btn_browse_key.add_css_class("circular");
         key_row.add_suffix(&btn_browse_key);
 
         // Save & Delete buttons
-        let btn_save = gtk4::Button::from_icon_name("lucide-check-symbolic");
+        let btn_save = gtk4::Button::from_icon_name(crate::ui::icons::pick(crate::ui::icons::SAVE));
         btn_save.set_tooltip_text(Some("Bu Profili Kaydet / Güncelle"));
         btn_save.add_css_class("flat");
         btn_save.add_css_class("circular");
         site_combo.add_suffix(&btn_save);
 
-        let btn_del = gtk4::Button::from_icon_name("lucide-trash-symbolic");
+        let btn_del = gtk4::Button::from_icon_name(crate::ui::icons::pick(crate::ui::icons::DELETE));
         btn_del.set_tooltip_text(Some("Bu Profili Sil"));
         btn_del.add_css_class("flat");
         btn_del.add_css_class("circular");
@@ -179,7 +179,7 @@ impl SiteManagerWindow {
             .vscrollbar_policy(gtk4::PolicyType::Automatic)
             .child(&page_general)
             .build();
-        view_stack.add_titled_with_icon(&scroll_gen, Some("general"), "Genel", "lucide-server-symbolic");
+        view_stack.add_titled_with_icon(&scroll_gen, Some("general"), "Genel", crate::ui::icons::pick(crate::ui::icons::SERVER));
 
         // --- PAGE 2: GELİŞMİŞ ---
         let page_adv = libadwaita::PreferencesPage::new();
@@ -192,28 +192,28 @@ impl SiteManagerWindow {
             .title("Varsayılan Yerel Dizin")
             .text("~/Projeler")
             .build();
-        def_local.add_prefix(&gtk4::Image::from_icon_name("lucide-hard-drive-symbolic"));
+        def_local.add_prefix(&gtk4::Image::from_icon_name("drive-harddisk-symbolic"));
         group_paths.add(&def_local);
 
         let def_remote = libadwaita::EntryRow::builder()
             .title("Varsayılan Uzak Dizin")
             .text("/var/www/html")
             .build();
-        def_remote.add_prefix(&gtk4::Image::from_icon_name("lucide-folder-symbolic"));
+        def_remote.add_prefix(&gtk4::Image::from_icon_name(crate::ui::icons::pick(crate::ui::icons::FOLDER)));
         group_paths.add(&def_remote);
 
         let sync_browse = libadwaita::SwitchRow::builder()
             .title("Eşzamanlı Gezinme (Synchronized Browsing)")
             .subtitle("Yerel ve uzak tarafta aynı anda dizin değiştir")
             .build();
-        sync_browse.add_prefix(&gtk4::Image::from_icon_name("lucide-link-symbolic"));
+        sync_browse.add_prefix(&gtk4::Image::from_icon_name("insert-link-symbolic"));
         group_paths.add(&sync_browse);
 
         let hidden_always = libadwaita::SwitchRow::builder()
             .title("Gizli Dosyaları Her Zaman Göster")
             .subtitle("Nokta (.) ile başlayan sistem dosyalarını listele")
             .build();
-        hidden_always.add_prefix(&gtk4::Image::from_icon_name("lucide-eye-symbolic"));
+        hidden_always.add_prefix(&gtk4::Image::from_icon_name(crate::ui::icons::pick(crate::ui::icons::SHOW_HIDDEN)));
         group_paths.add(&hidden_always);
 
         page_adv.add(&group_paths);
@@ -223,7 +223,7 @@ impl SiteManagerWindow {
             .vscrollbar_policy(gtk4::PolicyType::Automatic)
             .child(&page_adv)
             .build();
-        view_stack.add_titled_with_icon(&scroll_adv, Some("advanced"), "Gelişmiş", "lucide-sliders-symbolic");
+        view_stack.add_titled_with_icon(&scroll_adv, Some("advanced"), "Gelişmiş", "preferences-system-symbolic");
 
         // --- PAGE 3: AKTARIM AYARLARI ---
         let page_tx = libadwaita::PreferencesPage::new();
@@ -235,28 +235,28 @@ impl SiteManagerWindow {
             .title("Aktarım Modu")
             .model(&gtk4::StringList::new(&["Pasif Mod (Önerilen)", "Aktif Mod", "Varsayılan"]))
             .build();
-        tx_mode.add_prefix(&gtk4::Image::from_icon_name("lucide-rotate-cw-symbolic"));
+        tx_mode.add_prefix(&gtk4::Image::from_icon_name(crate::ui::icons::pick(crate::ui::icons::REFRESH)));
         group_tx.add(&tx_mode);
 
         let dl_limit = libadwaita::ComboRow::builder()
             .title("İndirme Hız Sınırı")
             .model(&gtk4::StringList::new(&["Sınırsız (Maksimum)", "500 KB/s", "1 MB/s", "5 MB/s"]))
             .build();
-        dl_limit.add_prefix(&gtk4::Image::from_icon_name("lucide-download-symbolic"));
+        dl_limit.add_prefix(&gtk4::Image::from_icon_name(crate::ui::icons::pick(crate::ui::icons::DOWNLOAD)));
         group_tx.add(&dl_limit);
 
         let ul_limit = libadwaita::ComboRow::builder()
             .title("Yükleme Hız Sınırı")
             .model(&gtk4::StringList::new(&["Sınırsız (Maksimum)", "500 KB/s", "1 MB/s", "5 MB/s"]))
             .build();
-        ul_limit.add_prefix(&gtk4::Image::from_icon_name("lucide-upload-symbolic"));
+        ul_limit.add_prefix(&gtk4::Image::from_icon_name(crate::ui::icons::pick(crate::ui::icons::UPLOAD)));
         group_tx.add(&ul_limit);
 
         let exist_action = libadwaita::ComboRow::builder()
             .title("Hedefte Aynı Dosya Varsa")
             .model(&gtk4::StringList::new(&["Üzerine Yaz", "Atla", "Yeniden Adlandır", "Sor"]))
             .build();
-        exist_action.add_prefix(&gtk4::Image::from_icon_name("lucide-file-text-symbolic"));
+        exist_action.add_prefix(&gtk4::Image::from_icon_name(crate::ui::icons::pick(crate::ui::icons::FILE)));
         group_tx.add(&exist_action);
 
         page_tx.add(&group_tx);
@@ -265,7 +265,7 @@ impl SiteManagerWindow {
             .vscrollbar_policy(gtk4::PolicyType::Automatic)
             .child(&page_tx)
             .build();
-        view_stack.add_titled_with_icon(&scroll_tx, Some("transfer"), "Aktarım Ayarları", "lucide-download-symbolic");
+        view_stack.add_titled_with_icon(&scroll_tx, Some("transfer"), "Aktarım Ayarları", crate::ui::icons::pick(crate::ui::icons::DOWNLOAD));
 
         // --- PAGE 4: AĞ VE GÜVENLİK ---
         let page_net = libadwaita::PreferencesPage::new();
@@ -281,14 +281,14 @@ impl SiteManagerWindow {
                 "Windows-1254 (Türkçe)"
             ]))
             .build();
-        charset_row.add_prefix(&gtk4::Image::from_icon_name("lucide-globe-symbolic"));
+        charset_row.add_prefix(&gtk4::Image::from_icon_name("network-workgroup-symbolic"));
         group_net.add(&charset_row);
 
         let proxy_type_row = libadwaita::ComboRow::builder()
             .title("Proxy Türü")
             .model(&gtk4::StringList::new(&["Proxy Yok", "SOCKS5", "HTTP / 1.1 Proxy", "FTP Proxy"]))
             .build();
-        proxy_type_row.add_prefix(&gtk4::Image::from_icon_name("lucide-shield-symbolic"));
+        proxy_type_row.add_prefix(&gtk4::Image::from_icon_name("security-high-symbolic"));
         group_net.add(&proxy_type_row);
 
         page_net.add(&group_net);
@@ -297,7 +297,7 @@ impl SiteManagerWindow {
             .vscrollbar_policy(gtk4::PolicyType::Automatic)
             .child(&page_net)
             .build();
-        view_stack.add_titled_with_icon(&scroll_net, Some("network"), "Ağ ve Güvenlik", "lucide-shield-symbolic");
+        view_stack.add_titled_with_icon(&scroll_net, Some("network"), "Ağ ve Güvenlik", "security-high-symbolic");
 
         main_vbox.append(&view_stack);
 
@@ -313,7 +313,7 @@ impl SiteManagerWindow {
             .height_request(44)
             .build();
         let conn_content = libadwaita::ButtonContent::builder()
-            .icon_name("lucide-power-symbolic")
+            .icon_name(crate::ui::icons::pick(crate::ui::icons::CONNECT))
             .label("Seçili Sunucuya Bağlan")
             .build();
         btn_connect.set_child(Some(&conn_content));

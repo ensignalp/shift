@@ -2,7 +2,7 @@ use std::process::Command;
 
 fn main() {
     println!("cargo:rerun-if-changed=data/resources.gresource.xml");
-    println!("cargo:rerun-if-changed=data/icons/lucide");
+    println!("cargo:rerun-if-changed=data/icons");
     println!("cargo:rerun-if-changed=data/style.css");
 
     let status = Command::new("glib-compile-resources")

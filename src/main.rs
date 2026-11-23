@@ -34,40 +34,11 @@ fn main() -> glib::ExitCode {
         let display = gtk4::gdk::Display::default().expect("Could not get default display");
         let icon_theme = gtk4::IconTheme::for_display(&display);
 
-        // 1. Embed and register compiled GResource bundle (Self-contained, 100% reliable)
+        // App icon only: every other icon comes from the user's icon theme.
         let gresource_bytes = glib::Bytes::from_static(include_bytes!("../data/resources.gresource"));
         if let Ok(resource) = gio::Resource::from_data(&gresource_bytes) {
-            let _ = gio::resources_register(&resource);
+            gio::resources_register(&resource);
             icon_theme.add_resource_path("/com/ensignsoft/Shift/icons");
-        }
-
-        // 2. Comprehensive Filesystem Search Path Fallbacks
-        let manifest_icons = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("data").join("icons");
-        if manifest_icons.exists() {
-            icon_theme.add_search_path(&manifest_icons.join("lucide"));
-            icon_theme.add_search_path(&manifest_icons);
-        }
-
-        if let Ok(mut exe_path) = std::env::current_exe() {
-            exe_path.pop();
-            let exe_lucide = exe_path.join("data").join("icons").join("lucide");
-            if exe_lucide.exists() {
-                icon_theme.add_search_path(&exe_lucide);
-                icon_theme.add_search_path(&exe_path.join("data").join("icons"));
-            }
-            if let Some(target_parent) = exe_path.parent().and_then(|p| p.parent()) {
-                let project_icons = target_parent.join("data").join("icons");
-                if project_icons.exists() {
-                    icon_theme.add_search_path(&project_icons.join("lucide"));
-                    icon_theme.add_search_path(&project_icons);
-                }
-            }
-        }
-
-        let fallback_lucide = std::path::Path::new("data/icons/lucide");
-        if fallback_lucide.exists() {
-            icon_theme.add_search_path(fallback_lucide);
-            icon_theme.add_search_path(std::path::Path::new("data/icons"));
         }
 
         // 3. Embedded Application CSS (No missing file errors)
@@ -113,7 +84,7 @@ fn build_ui(app: &libadwaita::Application) {
 
     // Left Action Area
     let start_box = gtk4::Box::new(gtk4::Orientation::Horizontal, 6);
-    let btn_sites = gtk4::Button::from_icon_name("lucide-server-symbolic");
+    let btn_sites = gtk4::Button::from_icon_name(crate::ui::icons::pick(crate::ui::icons::SERVER));
     btn_sites.add_css_class("flat");
     btn_sites.add_css_class("circular");
     btn_sites.set_tooltip_text(Some("Site Yöneticisi"));
@@ -125,7 +96,7 @@ fn build_ui(app: &libadwaita::Application) {
         .visible(false)
         .build();
     let disc_content = libadwaita::ButtonContent::builder()
-        .icon_name("lucide-power-symbolic")
+        .icon_name(crate::ui::icons::pick(crate::ui::icons::CONNECT))
         .label("Bağlantıyı Kes")
         .build();
     btn_disconnect.set_child(Some(&disc_content));
@@ -136,7 +107,7 @@ fn build_ui(app: &libadwaita::Application) {
     let end_box = gtk4::Box::new(gtk4::Orientation::Horizontal, 6);
 
     // Transfer Queue Button with Lucide Download icon
-    let btn_transfers = gtk4::Button::from_icon_name("lucide-download-symbolic");
+    let btn_transfers = gtk4::Button::from_icon_name(crate::ui::icons::pick(crate::ui::icons::DOWNLOAD));
     btn_transfers.add_css_class("flat");
     btn_transfers.add_css_class("circular");
     btn_transfers.set_tooltip_text(Some("Dosya Aktarımları Kuyruğu"));
@@ -144,7 +115,7 @@ fn build_ui(app: &libadwaita::Application) {
 
     // Main Hamburger Menu Button with Lucide Menu icon
     let menu_button = gtk4::MenuButton::builder()
-        .icon_name("lucide-menu-symbolic")
+        .icon_name(crate::ui::icons::pick(crate::ui::icons::MENU))
         .css_classes(["flat", "circular"])
         .tooltip_text("Ana Menü")
         .build();

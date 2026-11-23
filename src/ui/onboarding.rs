@@ -129,32 +129,32 @@ impl OnboardingView {
                 "FTPS - Güvenli TLS Şifrelemeli FTP (Port 21)"
             ]))
             .build();
-        proto_row.add_prefix(&gtk4::Image::from_icon_name("lucide-globe-symbolic"));
+        proto_row.add_prefix(&gtk4::Image::from_icon_name("network-workgroup-symbolic"));
         card_group.add(&proto_row);
 
         let host_row = libadwaita::EntryRow::builder()
             .title("Sunucu Adresi (Host / IP)")
             .build();
-        host_row.add_prefix(&gtk4::Image::from_icon_name("lucide-server-symbolic"));
+        host_row.add_prefix(&gtk4::Image::from_icon_name(crate::ui::icons::pick(crate::ui::icons::SERVER)));
         card_group.add(&host_row);
 
         let port_row = libadwaita::EntryRow::builder()
             .title("Bağlantı Portu")
             .text("22")
             .build();
-        port_row.add_prefix(&gtk4::Image::from_icon_name("lucide-globe-symbolic"));
+        port_row.add_prefix(&gtk4::Image::from_icon_name("network-workgroup-symbolic"));
         card_group.add(&port_row);
 
         let user_row = libadwaita::EntryRow::builder()
             .title("Kullanıcı Adı")
             .build();
-        user_row.add_prefix(&gtk4::Image::from_icon_name("lucide-user-symbolic"));
+        user_row.add_prefix(&gtk4::Image::from_icon_name("avatar-default-symbolic"));
         card_group.add(&user_row);
 
         let password_row = libadwaita::PasswordEntryRow::builder()
             .title("Parola")
             .build();
-        password_row.add_prefix(&gtk4::Image::from_icon_name("lucide-lock-symbolic"));
+        password_row.add_prefix(&gtk4::Image::from_icon_name("dialog-password-symbolic"));
         card_group.add(&password_row);
 
         let remember_row = libadwaita::SwitchRow::builder()
@@ -162,7 +162,7 @@ impl OnboardingView {
             .subtitle("Beni hatırla ve sunucu profilini sakla")
             .active(true)
             .build();
-        remember_row.add_prefix(&gtk4::Image::from_icon_name("lucide-check-symbolic"));
+        remember_row.add_prefix(&gtk4::Image::from_icon_name(crate::ui::icons::pick(crate::ui::icons::SAVE)));
         card_group.add(&remember_row);
 
         tab_quick.append(&card_group);
@@ -174,7 +174,7 @@ impl OnboardingView {
             .build();
 
         let btn_content = libadwaita::ButtonContent::builder()
-            .icon_name("lucide-power-symbolic")
+            .icon_name(crate::ui::icons::pick(crate::ui::icons::CONNECT))
             .label("Sunucuya Bağlan")
             .build();
         btn_primary.set_child(Some(&btn_content));
@@ -244,10 +244,10 @@ impl OnboardingView {
                         .subtitle(&format!("{} • {}@{}:{}", srv.proto.as_str().to_uppercase(), srv.user, srv.host, srv.port))
                         .activatable(true)
                         .build();
-                    row.add_prefix(&gtk4::Image::from_icon_name("lucide-server-symbolic"));
+                    row.add_prefix(&gtk4::Image::from_icon_name(crate::ui::icons::pick(crate::ui::icons::SERVER)));
 
                     // Connect button
-                    let btn_conn = gtk4::Button::from_icon_name("lucide-arrow-right-symbolic");
+                    let btn_conn = gtk4::Button::from_icon_name(crate::ui::icons::pick(crate::ui::icons::FORWARD));
                     btn_conn.add_css_class("flat");
                     btn_conn.add_css_class("circular");
                     btn_conn.set_tooltip_text(Some("Hemen Bağlan"));
@@ -260,7 +260,7 @@ impl OnboardingView {
                     row.add_suffix(&btn_conn);
 
                     // Edit button
-                    let btn_edit = gtk4::Button::from_icon_name("lucide-pencil-symbolic");
+                    let btn_edit = gtk4::Button::from_icon_name(crate::ui::icons::pick(crate::ui::icons::RENAME));
                     btn_edit.add_css_class("flat");
                     btn_edit.add_css_class("circular");
                     btn_edit.set_tooltip_text(Some("Profili Düzenle"));
@@ -333,7 +333,7 @@ impl OnboardingView {
                     row.add_suffix(&btn_edit);
 
                     // Delete button
-                    let btn_del = gtk4::Button::from_icon_name("lucide-trash-symbolic");
+                    let btn_del = gtk4::Button::from_icon_name(crate::ui::icons::pick(crate::ui::icons::DELETE));
                     btn_del.add_css_class("flat");
                     btn_del.add_css_class("circular");
                     btn_del.set_tooltip_text(Some("Profili Sil"));
@@ -385,8 +385,8 @@ impl OnboardingView {
                     .subtitle("Tüm kayıtlı sunucuları detaylı yönet")
                     .activatable(true)
                     .build();
-                sm_row.add_prefix(&gtk4::Image::from_icon_name("lucide-sliders-symbolic"));
-                let btn_sm = gtk4::Button::from_icon_name("lucide-arrow-right-symbolic");
+                sm_row.add_prefix(&gtk4::Image::from_icon_name("preferences-system-symbolic"));
+                let btn_sm = gtk4::Button::from_icon_name(crate::ui::icons::pick(crate::ui::icons::FORWARD));
                 btn_sm.add_css_class("flat");
                 btn_sm.add_css_class("circular");
                 btn_sm.set_valign(gtk4::Align::Center);
