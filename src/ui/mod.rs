@@ -3,3 +3,5 @@ pub mod log_revealer;
 pub mod onboarding;
 pub mod explorer;
 pub mod icons;
+pub mod widgets;
+pub mod accent;

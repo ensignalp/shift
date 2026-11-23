@@ -70,24 +70,18 @@ impl ExplorerView {
 
         let btn_back = gtk4::Button::from_icon_name(crate::ui::icons::pick(crate::ui::icons::BACK));
         btn_back.add_css_class("flat");
-        btn_back.add_css_class("circular");
-        btn_back.add_css_class("nav-icon-btn");
         btn_back.set_tooltip_text(Some("Geri Git"));
         btn_back.set_sensitive(false);
         action_bar.append(&btn_back);
 
         let btn_forward = gtk4::Button::from_icon_name(crate::ui::icons::pick(crate::ui::icons::FORWARD));
         btn_forward.add_css_class("flat");
-        btn_forward.add_css_class("circular");
-        btn_forward.add_css_class("nav-icon-btn");
         btn_forward.set_tooltip_text(Some("İleri Git"));
         btn_forward.set_sensitive(false);
         action_bar.append(&btn_forward);
 
         let btn_up = gtk4::Button::from_icon_name(crate::ui::icons::pick(crate::ui::icons::UP));
         btn_up.add_css_class("flat");
-        btn_up.add_css_class("circular");
-        btn_up.add_css_class("nav-icon-btn");
         btn_up.set_tooltip_text(Some("Üst Dizine Git"));
         btn_up.set_sensitive(false);
         action_bar.append(&btn_up);
@@ -101,28 +95,15 @@ impl ExplorerView {
         action_bar.append(&path_box);
 
         // Upload Button
-        let btn_upload = gtk4::Button::builder()
-            .css_classes(["suggested-action", "pill"])
-            .build();
-        let up_content = libadwaita::ButtonContent::builder()
-            .icon_name(crate::ui::icons::pick(crate::ui::icons::UPLOAD))
-            .label("Dosya Yükle")
-            .build();
-        btn_upload.set_child(Some(&up_content));
+        let btn_upload = crate::ui::widgets::icon_label_button(crate::ui::icons::UPLOAD, "Dosya Yükle");
+        btn_upload.add_css_class("suggested-action");
         let on_up_clone = on_upload.clone();
         let cur_p_up = Rc::clone(&current_path);
         btn_upload.connect_clicked(move |_| on_up_clone(cur_p_up.borrow().clone()));
         action_bar.append(&btn_upload);
 
         // New Folder Button
-        let btn_new_folder = gtk4::Button::builder()
-            .css_classes(["flat", "pill"])
-            .build();
-        let folder_content = libadwaita::ButtonContent::builder()
-            .icon_name(crate::ui::icons::pick(crate::ui::icons::FOLDER_NEW))
-            .label("Yeni Klasör")
-            .build();
-        btn_new_folder.set_child(Some(&folder_content));
+        let btn_new_folder = crate::ui::widgets::icon_button(crate::ui::icons::FOLDER_NEW, "Yeni Klasör");
         let on_nf_clone = on_new_folder.clone();
         let cur_p_clone = Rc::clone(&current_path);
         btn_new_folder.connect_clicked(move |_| {
@@ -133,7 +114,6 @@ impl ExplorerView {
         // Refresh Button
         let btn_refresh = gtk4::Button::from_icon_name(crate::ui::icons::pick(crate::ui::icons::REFRESH));
         btn_refresh.add_css_class("flat");
-        btn_refresh.add_css_class("circular");
         btn_refresh.set_tooltip_text(Some("Dizini Yenile"));
         let on_nav_ref = on_navigate.clone();
         let cur_p_ref = Rc::clone(&current_path);
@@ -153,7 +133,7 @@ impl ExplorerView {
         let btn_hidden = gtk4::ToggleButton::builder()
             .icon_name(crate::ui::icons::pick(crate::ui::icons::SHOW_HIDDEN))
             .tooltip_text("Gizli Dosyaları Göster/Gizle")
-            .css_classes(["flat", "circular"])
+            .css_classes(["flat"])
             .build();
         action_bar.append(&btn_hidden);
 
@@ -370,13 +350,10 @@ impl ExplorerView {
                     .css_classes(if destructive { vec!["flat", "error"] } else { vec!["flat"] })
                     .halign(gtk4::Align::Fill)
                     .build();
-                let content = libadwaita::ButtonContent::builder()
-                    .icon_name(icon)
-                    .label(label)
-                    .halign(gtk4::Align::Start)
-                    .margin_start(4)
-                    .margin_end(8)
-                    .build();
+                let content = gtk4::Box::new(gtk4::Orientation::Horizontal, 8);
+                content.set_halign(gtk4::Align::Start);
+                content.append(&gtk4::Image::from_icon_name(icon));
+                content.append(&gtk4::Label::new(Some(label)));
                 btn.set_child(Some(&content));
 
                 let pop_c = pop_ref.clone();
@@ -618,12 +595,11 @@ impl ExplorerView {
             self.path_box.remove(&child);
         }
 
-        let btn_root = gtk4::Button::builder().css_classes(["flat"]).build();
-        let root_content = libadwaita::ButtonContent::builder()
+        let btn_root = gtk4::Button::builder()
             .icon_name(crate::ui::icons::pick(crate::ui::icons::SERVER))
-            .label("Sunucu Kökü")
+            .tooltip_text("Sunucu kökü")
+            .css_classes(["flat"])
             .build();
-        btn_root.set_child(Some(&root_content));
         self.path_box.append(&btn_root);
 
         let clean = path.trim_matches('/');

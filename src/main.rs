@@ -6,7 +6,7 @@ mod ui;
 use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 use gtk4::prelude::*;
-use libadwaita::prelude::*;
+use ui::widgets::{self, Field, Toaster};
 use models::{FileItem, ServerProfile};
 use engine::{BackendEngine, ClientConnection};
 use ui::explorer::ExplorerView;
@@ -26,7 +26,7 @@ pub enum AppEvent {
 }
 
 fn main() -> glib::ExitCode {
-    let app = libadwaita::Application::builder()
+    let app = gtk4::Application::builder()
         .application_id(APP_ID)
         .build();
 
@@ -49,14 +49,17 @@ fn main() -> glib::ExitCode {
             &css_provider,
             gtk4::STYLE_PROVIDER_PRIORITY_APPLICATION,
         );
+
+        // Desktop accent colour for GTK's built-in theme (no-op for other themes).
+        ui::accent::install(&display);
     });
 
     app.connect_activate(build_ui);
     app.run()
 }
 
-fn build_ui(app: &libadwaita::Application) {
-    let window = libadwaita::ApplicationWindow::builder()
+fn build_ui(app: &gtk4::Application) {
+    let window = gtk4::ApplicationWindow::builder()
         .application(app)
         .title("Shift")
         .default_width(733)
@@ -66,73 +69,87 @@ fn build_ui(app: &libadwaita::Application) {
         .icon_name("com.ensignsoft.Shift")
         .build();
 
-    let toast_overlay = libadwaita::ToastOverlay::new();
+    let toaster = Toaster::new();
     let root_vbox = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
 
-    // HeaderBar with guaranteed visible title buttons (Close, Minimize, Maximize)
-    let header_bar = libadwaita::HeaderBar::builder()
-        .css_classes(["flat"])
-        .show_end_title_buttons(true)
-        .show_start_title_buttons(true)
+    // --- Window chrome -------------------------------------------------
+    // GNOME-family desktops expect client-side header bars; KDE, XFCE, MATE,
+    // Cinnamon, LXQt... draw their own title bar and buttons. In that case we
+    // leave decoration to the window manager and use a plain toolbar instead,
+    // so the title bar, button layout and button theme are the desktop's own.
+    let csd = use_client_side_decorations();
+
+    let win_title = gtk4::Label::builder().label("Shift").css_classes(["heading"]).build();
+    let win_subtitle = gtk4::Label::builder()
+        .label("Sunucuya bağlı değil")
+        .css_classes(["caption", "dim-label"])
+        .ellipsize(gtk4::pango::EllipsizeMode::Middle)
         .build();
 
-    let win_title = libadwaita::WindowTitle::builder()
-        .title("Shift")
-        .subtitle("Sunucuya Bağlanın")
-        .build();
-    header_bar.set_title_widget(Some(&win_title));
-
-    // Left Action Area
-    let start_box = gtk4::Box::new(gtk4::Orientation::Horizontal, 6);
-    let btn_sites = gtk4::Button::from_icon_name(crate::ui::icons::pick(crate::ui::icons::SERVER));
-    btn_sites.add_css_class("flat");
-    btn_sites.add_css_class("circular");
-    btn_sites.set_tooltip_text(Some("Site Yöneticisi"));
+    let start_box = gtk4::Box::new(gtk4::Orientation::Horizontal, 4);
+    let btn_sites = widgets::icon_button(ui::icons::SERVER, "Site Yöneticisi");
     start_box.append(&btn_sites);
 
     let btn_disconnect = gtk4::Button::builder()
-        .css_classes(["destructive-action", "btn-disconnect-red"])
+        .label("Bağlantıyı Kes")
+        .tooltip_text("Sunucu bağlantısını sonlandır")
         .valign(gtk4::Align::Center)
         .visible(false)
         .build();
-    let disc_content = libadwaita::ButtonContent::builder()
-        .icon_name(crate::ui::icons::pick(crate::ui::icons::CONNECT))
-        .label("Bağlantıyı Kes")
-        .build();
-    btn_disconnect.set_child(Some(&disc_content));
     start_box.append(&btn_disconnect);
-    header_bar.pack_start(&start_box);
 
-    // Right Action Area
-    let end_box = gtk4::Box::new(gtk4::Orientation::Horizontal, 6);
-
-    // Transfer Queue Button with Lucide Download icon
-    let btn_transfers = gtk4::Button::from_icon_name(crate::ui::icons::pick(crate::ui::icons::DOWNLOAD));
-    btn_transfers.add_css_class("flat");
-    btn_transfers.add_css_class("circular");
-    btn_transfers.set_tooltip_text(Some("Dosya Aktarımları Kuyruğu"));
+    let end_box = gtk4::Box::new(gtk4::Orientation::Horizontal, 4);
+    let btn_transfers = widgets::icon_button(ui::icons::TRANSFERS, "Dosya Aktarımları Kuyruğu");
     end_box.append(&btn_transfers);
 
-    // Main Hamburger Menu Button with Lucide Menu icon
     let menu_button = gtk4::MenuButton::builder()
-        .icon_name(crate::ui::icons::pick(crate::ui::icons::MENU))
-        .css_classes(["flat", "circular"])
+        .icon_name(ui::icons::pick(ui::icons::MENU))
         .tooltip_text("Ana Menü")
+        .valign(gtk4::Align::Center)
         .build();
+    menu_button.add_css_class("flat");
 
     let menu_model = gio::Menu::new();
-    menu_model.append(Some("Site Yöneticisi"), Some("app.site-manager"));
-    menu_model.append(Some("Günlük Konsolunu Göster/Gizle"), Some("app.toggle-log"));
-    menu_model.append(Some("Karanlık Modu Aç/Kapat"), Some("app.toggle-dark"));
-    menu_model.append(Some("Shift Hakkında"), Some("app.about"));
+    let sec_main = gio::Menu::new();
+    sec_main.append(Some("Site Yöneticisi"), Some("app.site-manager"));
+    sec_main.append(Some("Günlük Konsolunu Göster/Gizle"), Some("app.toggle-log"));
+    menu_model.append_section(None, &sec_main);
+    let sec_theme = gio::Menu::new();
+    sec_theme.append(Some("Sistem Teması"), Some("app.color-scheme::system"));
+    sec_theme.append(Some("Açık"), Some("app.color-scheme::light"));
+    sec_theme.append(Some("Koyu"), Some("app.color-scheme::dark"));
+    menu_model.append_section(Some("Görünüm"), &sec_theme);
+    let sec_about = gio::Menu::new();
+    sec_about.append(Some("Shift Hakkında"), Some("app.about"));
+    menu_model.append_section(None, &sec_about);
     menu_button.set_menu_model(Some(&menu_model));
     end_box.append(&menu_button);
 
-    header_bar.pack_end(&end_box);
-    root_vbox.append(&header_bar);
+    if csd {
+        let title_box = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
+        title_box.set_valign(gtk4::Align::Center);
+        title_box.append(&win_title);
+        title_box.append(&win_subtitle);
+        let header_bar = gtk4::HeaderBar::new();
+        header_bar.pack_start(&start_box);
+        header_bar.set_title_widget(Some(&title_box));
+        header_bar.pack_end(&end_box);
+        window.set_titlebar(Some(&header_bar));
+    } else {
+        // The WM title bar already shows the window title.
+        let toolbar = gtk4::Box::new(gtk4::Orientation::Horizontal, 8);
+        toolbar.add_css_class("app-toolbar");
+        win_subtitle.set_hexpand(true);
+        win_subtitle.set_xalign(0.0);
+        toolbar.append(&start_box);
+        toolbar.append(&win_subtitle);
+        toolbar.append(&end_box);
+        root_vbox.append(&toolbar);
+        root_vbox.append(&gtk4::Separator::new(gtk4::Orientation::Horizontal));
+    }
 
     // ViewStack
-    let view_stack = libadwaita::ViewStack::builder()
+    let view_stack = gtk4::Stack::builder()
         .vexpand(true)
         .hexpand(true)
         .build();
@@ -253,33 +270,14 @@ fn build_ui(app: &libadwaita::Application) {
     let tx_nf = tx.clone();
     let win_nf = window.clone();
     let on_new_folder = move |parent_dir: String| {
-        let dialog = libadwaita::MessageDialog::builder()
-            .transient_for(&win_nf)
-            .heading("Yeni Klasör Oluştur")
-            .body("Oluşturulacak klasörün adını girin.")
-            .build();
-
-        let entry = libadwaita::EntryRow::builder()
-            .title("Klasör Adı")
-            .text("Yeni Klasör")
-            .build();
-        let box_entry = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
-        box_entry.set_margin_top(12);
-        box_entry.set_margin_bottom(12);
-        box_entry.append(&entry);
-        dialog.set_extra_child(Some(&box_entry));
-
-        dialog.add_response("cancel", "İptal");
-        dialog.add_response("create", "Oluştur");
-        dialog.set_response_appearance("create", libadwaita::ResponseAppearance::Suggested);
-
         let conn = Arc::clone(&conn_nf);
         let tx = tx_nf.clone();
         let parent = parent_dir.clone();
 
-        dialog.connect_response(None, move |_, resp| {
-            if resp == "create" {
-                let name = entry.text().trim().to_string();
+        widgets::form_dialog(Some(win_nf.upcast_ref()), "Yeni Klasör", Some("Oluşturulacak klasörün adını girin."),
+            vec![Field::Text("Klasör adı", "Yeni Klasör".into())], "_Oluştur", move |vals| {
+            {
+                let name = vals[0].trim().to_string();
                 if name.is_empty() { return; }
                 let conn = Arc::clone(&conn);
                 let tx = tx.clone();
@@ -306,7 +304,6 @@ fn build_ui(app: &libadwaita::Application) {
                 });
             }
         });
-        dialog.present();
     };
 
     let conn_del = Arc::clone(&active_connection);
@@ -322,23 +319,14 @@ fn build_ui(app: &libadwaita::Application) {
             .map(|p| p.to_string_lossy().to_string())
             .unwrap_or_else(|| "/".into());
 
-        let dialog = libadwaita::MessageDialog::builder()
-            .transient_for(&win_del)
-            .heading("Öğeyi Sil?")
-            .body(&format!("'{}' kalıcı olarak silinecek. Emin misiniz?", item_name))
-            .build();
-        dialog.add_response("cancel", "Vazgeç");
-        dialog.add_response("delete", "Sil");
-        dialog.set_response_appearance("delete", libadwaita::ResponseAppearance::Destructive);
-
         let conn = Arc::clone(&conn_del);
         let tx = tx_del.clone();
         let path = full_path.clone();
         let name = item_name.clone();
         let parent = parent_dir.clone();
 
-        dialog.connect_response(None, move |_, resp| {
-            if resp == "delete" {
+        widgets::confirm(&win_del, "Öğe silinsin mi?", &format!("'{}' kalıcı olarak silinecek.", item_name), "Sil", move || {
+            {
                 let conn = Arc::clone(&conn);
                 let tx = tx.clone();
                 let path = path.clone();
@@ -366,7 +354,6 @@ fn build_ui(app: &libadwaita::Application) {
                 });
             }
         });
-        dialog.present();
     };
 
     let conn_ren = Arc::clone(&active_connection);
@@ -382,34 +369,16 @@ fn build_ui(app: &libadwaita::Application) {
             .map(|p| p.to_string_lossy().to_string())
             .unwrap_or_else(|| "/".into());
 
-        let dialog = libadwaita::MessageDialog::builder()
-            .transient_for(&win_ren)
-            .heading("Yeniden Adlandır")
-            .body("Öğe için yeni ismi girin.")
-            .build();
-
-        let entry = libadwaita::EntryRow::builder()
-            .title("Yeni İsim")
-            .text(&old_name)
-            .build();
-        let box_entry = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
-        box_entry.set_margin_top(12);
-        box_entry.set_margin_bottom(12);
-        box_entry.append(&entry);
-        dialog.set_extra_child(Some(&box_entry));
-
-        dialog.add_response("cancel", "İptal");
-        dialog.add_response("rename", "Değiştir");
-        dialog.set_response_appearance("rename", libadwaita::ResponseAppearance::Suggested);
-
         let conn = Arc::clone(&conn_ren);
         let tx = tx_ren.clone();
         let parent = parent_dir.clone();
         let old_path = old_path.clone();
 
-        dialog.connect_response(None, move |_, resp| {
-            if resp == "rename" {
-                let new_name = entry.text().trim().to_string();
+        let old_name_init = old_name.clone();
+        widgets::form_dialog(Some(win_ren.upcast_ref()), "Yeniden Adlandır", None,
+            vec![Field::Text("Yeni ad", old_name_init)], "_Yeniden Adlandır", move |vals| {
+            {
+                let new_name = vals[0].trim().to_string();
                 if new_name.is_empty() || new_name == old_name { return; }
                 let new_full_path = if parent == "/" {
                     format!("/{}", new_name)
@@ -443,7 +412,6 @@ fn build_ui(app: &libadwaita::Application) {
                 });
             }
         });
-        dialog.present();
     };
 
     let explorer_view = Rc::new(ExplorerView::new(
@@ -506,7 +474,7 @@ fn build_ui(app: &libadwaita::Application) {
         do_connect.clone(),
         move || {
             let do_conn = do_connect_for_sm.clone();
-            SiteManagerWindow::show(&w_for_sm, move |srv| {
+            SiteManagerWindow::show(w_for_sm.upcast_ref(), move |srv| {
                 do_conn(srv);
             });
         },
@@ -516,19 +484,22 @@ fn build_ui(app: &libadwaita::Application) {
     view_stack.set_visible_child_name("onboarding");
 
     root_vbox.append(&view_stack);
+    // The hidden log panel must not compete with the main view for space.
+    log_rev.container.set_vexpand(false);
     root_vbox.append(&log_rev.container);
 
-    toast_overlay.set_child(Some(&root_vbox));
-    window.set_content(Some(&toast_overlay));
+    toaster.overlay.set_child(Some(&root_vbox));
+    window.set_child(Some(&toaster.overlay));
 
     // Receiver polling loop attached to GLib Main Context
     let log_event = Rc::clone(&log_rev);
     let exp_event = Rc::clone(&explorer_view);
-    let title_event = win_title.clone();
+    let title_event = win_subtitle.clone();
+    let win_title_event = window.clone();
     let btn_disc_event = btn_disconnect.clone();
     let btn_sites_event = btn_sites.clone();
     let stack_event = view_stack.clone();
-    let toast_event = toast_overlay.clone();
+    let toast_event = toaster.clone();
     let win_err = window.clone();
 
     glib::timeout_add_local(std::time::Duration::from_millis(50), move || {
@@ -538,42 +509,29 @@ fn build_ui(app: &libadwaita::Application) {
                     log_event.append_log(&lvl, &msg);
                 }
                 AppEvent::Connected(server_str, items) => {
-                    title_event.set_subtitle(&format!("● {}", server_str));
+                    title_event.set_label(&server_str);
+                    win_title_event.set_title(Some(&format!("{} — Shift", server_str)));
                     btn_disc_event.set_visible(true);
                     btn_sites_event.set_visible(false);
                     exp_event.set_items("/", items);
                     stack_event.set_visible_child_name("explorer");
-                    toast_event.add_toast(libadwaita::Toast::new(&format!("Bağlandı: {}", server_str)));
+                    toast_event.show(&format!("Bağlandı: {}", server_str));
                 }
                 AppEvent::DirectoryListed(path, items) => {
                     exp_event.set_items(&path, items);
                 }
                 AppEvent::Toast(msg) => {
-                    toast_event.add_toast(libadwaita::Toast::new(&msg));
+                    toast_event.show(&msg);
                 }
                 AppEvent::Error(err) => {
-                    toast_event.add_toast(libadwaita::Toast::new(&err));
-                    let dialog = libadwaita::MessageDialog::builder()
-                        .transient_for(&win_err)
-                        .modal(true)
-                        .heading("Hata Bildirimi")
-                        .body(&err)
-                        .build();
-                    dialog.add_response("copy", "Kopyala");
-                    dialog.set_response_appearance("copy", libadwaita::ResponseAppearance::Suggested);
-                    dialog.add_response("close", "Tamam");
-                    dialog.set_default_response(Some("close"));
-
                     let err_copy = err.clone();
                     let t_copy = toast_event.clone();
-                    dialog.connect_response(None, move |_, resp| {
-                        if resp == "copy" {
-                            let display = gtk4::gdk::Display::default().unwrap();
+                    widgets::error(&win_err, &err, move || {
+                        if let Some(display) = gtk4::gdk::Display::default() {
                             display.clipboard().set_text(&err_copy);
-                            t_copy.add_toast(libadwaita::Toast::new("Hata mesajı panoya kopyalandı."));
                         }
+                        t_copy.show("Hata mesajı panoya kopyalandı.");
                     });
-                    dialog.present();
                 }
             }
         }
@@ -587,7 +545,7 @@ fn build_ui(app: &libadwaita::Application) {
     btn_sites.connect_clicked(move |_| {
         let do_conn = do_conn_sm.clone();
         let reload = onb_reload_sm.clone();
-        SiteManagerWindow::show(&w_sm, move |srv| {
+        SiteManagerWindow::show(w_sm.upcast_ref(), move |srv| {
             reload();
             do_conn(srv);
         });
@@ -596,7 +554,8 @@ fn build_ui(app: &libadwaita::Application) {
     // Disconnect button click
     let conn_disc = Arc::clone(&active_connection);
     let view_stack_disc = view_stack.clone();
-    let win_title_disc = win_title.clone();
+    let win_title_disc = win_subtitle.clone();
+    let win_disc = window.clone();
     let btn_disc_disc = btn_disconnect.clone();
     let btn_sites_disc = btn_sites.clone();
     let log_disc = Rc::clone(&log_rev);
@@ -604,7 +563,8 @@ fn build_ui(app: &libadwaita::Application) {
 
     btn_disconnect.connect_clicked(move |_| {
         *conn_disc.lock().unwrap() = None;
-        win_title_disc.set_subtitle("Sunucuya Bağlanın");
+        win_title_disc.set_label("Sunucuya bağlı değil");
+        win_disc.set_title(Some("Shift"));
         btn_disc_disc.set_visible(false);
         btn_sites_disc.set_visible(true);
         onb_reload_disc();
@@ -620,7 +580,7 @@ fn build_ui(app: &libadwaita::Application) {
     act_site_mgr.connect_activate(move |_, _| {
         let do_conn = do_conn_sm2.clone();
         let reload = onb_reload_sm2.clone();
-        SiteManagerWindow::show(&w_sm2, move |srv| {
+        SiteManagerWindow::show(w_sm2.upcast_ref(), move |srv| {
             reload();
             do_conn(srv);
         });
@@ -635,32 +595,161 @@ fn build_ui(app: &libadwaita::Application) {
     });
     app.add_action(&act_toggle_log);
 
-    let act_toggle_dark = gio::SimpleAction::new("toggle-dark", None);
-    act_toggle_dark.connect_activate(move |_, _| {
-        let mgr = libadwaita::StyleManager::default();
-        if mgr.is_dark() {
-            mgr.set_color_scheme(libadwaita::ColorScheme::ForceLight);
-        } else {
-            mgr.set_color_scheme(libadwaita::ColorScheme::ForceDark);
-        }
-    });
-    app.add_action(&act_toggle_dark);
+    // Appearance: follow the system by default; explicit light/dark on request.
+    let act_scheme = gio::SimpleAction::new_stateful(
+        "color-scheme",
+        Some(glib::VariantTy::STRING),
+        &"system".to_variant(),
+    );
+    if let Some(settings) = gtk4::Settings::default() {
+        let original = (settings.gtk_theme_name(), settings.is_gtk_application_prefer_dark_theme());
+        let mode = Rc::new(std::cell::RefCell::new(String::from("system")));
+        // GTK's built-in theme does not apply the desktop's dark preference by
+        // itself (libadwaita used to); follow it while in "system" mode.
+        follow_system_scheme(&settings, original.1);
+        let mode_n = Rc::clone(&mode);
+        let orig_n = original.1;
+        settings.connect_notify_local(Some("gtk-interface-color-scheme"), move |s, _| {
+            if mode_n.borrow().as_str() == "system" {
+                follow_system_scheme(s, orig_n);
+            }
+        });
+        act_scheme.connect_activate(move |act, param| {
+            let m = param.and_then(|p| p.str()).unwrap_or("system").to_string();
+            *mode.borrow_mut() = m.clone();
+            apply_color_scheme(&settings, &m, &original);
+            act.set_state(&m.to_variant());
+        });
+    }
+    app.add_action(&act_scheme);
 
     let act_about = gio::SimpleAction::new("about", None);
     let w_about = window.clone();
     act_about.connect_activate(move |_, _| {
-        let dialog = libadwaita::AboutDialog::builder()
-            .application_name("Shift")
-            .application_icon("com.ensignsoft.Shift")
-            .developer_name("Ensignsoft Mühendislik Ekibi")
-            .version("1.0.0")
+        let dialog = gtk4::AboutDialog::builder()
+            .transient_for(&w_about)
+            .modal(true)
+            .program_name("Shift")
+            .logo_icon_name("com.ensignsoft.Shift")
+            .authors(["Ensignsoft Mühendislik Ekibi"])
+            .version(env!("CARGO_PKG_VERSION"))
             .comments("Yüksek performanslı, güvenli ve modern bulut dosya aktarım istemcisi.")
             .website("https://ensignsoft.com")
-            .issue_url("https://github.com/ensignsoft/shift/issues")
+            .license_type(gtk4::License::Gpl20)
             .build();
-        dialog.present(Some(&w_about));
+        dialog.present();
     });
     app.add_action(&act_about);
 
     window.present();
+
+    // Debug aid: SHIFT_AUTOCONNECT=<n> connects to the n-th saved site at startup.
+    if let Some(idx) = std::env::var("SHIFT_AUTOCONNECT").ok().and_then(|v| v.parse::<usize>().ok()) {
+        if let Some(srv) = server_store::ServerStore::new().get_all().into_iter().nth(idx) {
+            do_connect(srv);
+        }
+    }
+
+    if let Ok(path) = std::env::var("SHIFT_SNAPSHOT") {
+        debug_snapshot(&window, path);
+    }
+}
+
+/// GNOME-family shells have no server-side decorations and expect header
+/// bars; everywhere else the window manager draws the title bar.
+/// Override with SHIFT_CSD=1 / SHIFT_CSD=0.
+fn use_client_side_decorations() -> bool {
+    if let Ok(v) = std::env::var("SHIFT_CSD") {
+        return v == "1" || v.eq_ignore_ascii_case("true");
+    }
+    let desktop = std::env::var("XDG_CURRENT_DESKTOP").unwrap_or_default().to_lowercase();
+    desktop
+        .split(':')
+        .any(|d| matches!(d, "gnome" | "gnome-classic" | "gnome-flashback" | "pantheon" | "budgie" | "budgie-desktop" | "unity" | "cosmic" | "phosh"))
+}
+
+/// Set an enum GObject property by its nick, if the property exists in the
+/// running GTK (keeps us compatible with GTK < 4.20).
+fn set_enum_by_nick(obj: &impl IsA<glib::Object>, prop: &str, nick: &str) {
+    if let Some(pspec) = obj.find_property(prop) {
+        if let Some(class) = glib::EnumClass::with_type(pspec.value_type()) {
+            if let Some(value) = class.to_value_by_nick(nick) {
+                obj.set_property_from_value(prop, &value);
+            }
+        }
+    }
+}
+
+fn enum_nick(obj: &impl IsA<glib::Object>, prop: &str) -> Option<String> {
+    obj.find_property(prop)?;
+    let value = obj.property_value(prop);
+    glib::EnumValue::from_value(&value).map(|(_, v)| v.nick().to_string())
+}
+
+/// Use the theme's dark variant when the desktop prefers dark (GTK >= 4.20
+/// exposes the portal value as gtk-interface-color-scheme). Otherwise keep
+/// whatever the desktop configured (e.g. KDE writes prefer-dark/Breeze-Dark).
+fn follow_system_scheme(settings: &gtk4::Settings, orig_dark: bool) {
+    match enum_nick(settings, "gtk-interface-color-scheme").as_deref() {
+        Some("dark") => settings.set_gtk_application_prefer_dark_theme(true),
+        Some("light") => settings.set_gtk_application_prefer_dark_theme(false),
+        _ => settings.set_gtk_application_prefer_dark_theme(orig_dark),
+    }
+}
+
+fn apply_color_scheme(settings: &gtk4::Settings, mode: &str, original: &(Option<glib::GString>, bool)) {
+    // GTK >= 4.20 understands gtk-interface-color-scheme (default/light/dark).
+    let has_scheme = settings.find_property("gtk-interface-color-scheme").is_some();
+    let (orig_theme, orig_dark) = original;
+    let orig_theme = orig_theme.as_ref().map(|t| t.to_string()).unwrap_or_default();
+    let base_theme = orig_theme
+        .strip_suffix("-dark")
+        .or_else(|| orig_theme.strip_suffix("-Dark"))
+        .unwrap_or(&orig_theme)
+        .to_string();
+    match mode {
+        "dark" => {
+            if has_scheme { set_enum_by_nick(settings, "gtk-interface-color-scheme", "dark"); }
+            settings.set_gtk_application_prefer_dark_theme(true);
+        }
+        "light" => {
+            if has_scheme { set_enum_by_nick(settings, "gtk-interface-color-scheme", "light"); }
+            settings.set_gtk_application_prefer_dark_theme(false);
+            if base_theme != orig_theme { settings.set_gtk_theme_name(Some(&base_theme)); }
+        }
+        _ => {
+            if has_scheme { set_enum_by_nick(settings, "gtk-interface-color-scheme", "default"); }
+            settings.set_gtk_theme_name(Some(&orig_theme));
+            follow_system_scheme(settings, *orig_dark);
+        }
+    }
+}
+
+/// Debug aid: SHIFT_SNAPSHOT=/tmp/x.png renders the window to a PNG and quits.
+fn debug_snapshot(window: &gtk4::ApplicationWindow, path: String) {
+    let window = window.clone();
+    let delay = std::env::var("SHIFT_SNAPSHOT_DELAY").ok().and_then(|v| v.parse().ok()).unwrap_or(1500);
+    glib::timeout_add_local_once(std::time::Duration::from_millis(delay), move || {
+        if std::env::var("SHIFT_DUMP_TREE").is_ok() {
+            fn dump(w: &gtk4::Widget, depth: usize, root: &gtk4::Widget) {
+                if let Some(b) = w.compute_bounds(root) {
+                    eprintln!("{}{} vis={} y={:.0} h={:.0} w={:.0}", "  ".repeat(depth), w.type_().name(), w.is_visible(), b.y(), b.height(), b.width());
+                }
+                let mut c = w.first_child();
+                while let Some(ch) = c { dump(&ch, depth + 1, root); c = ch.next_sibling(); }
+            }
+            dump(window.upcast_ref(), 0, window.upcast_ref());
+        }
+        let paintable = gtk4::WidgetPaintable::new(Some(&window));
+        let (w, h) = (window.width() as f64, window.height() as f64);
+        let snap = gtk4::Snapshot::new();
+        paintable.snapshot(&snap, w, h);
+        if let (Some(node), Some(renderer)) = (snap.to_node(), window.native().and_then(|n| n.renderer())) {
+            let texture = renderer.render_texture(&node, None);
+            let _ = texture.save_to_png(&path);
+        }
+        if let Some(app) = window.application() {
+            app.quit();
+        }
+    });
 }

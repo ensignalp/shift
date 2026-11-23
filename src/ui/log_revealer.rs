@@ -47,19 +47,16 @@ impl LogRevealer {
         let btn_copy = gtk4::Button::from_icon_name(crate::ui::icons::pick(crate::ui::icons::COPY));
         btn_copy.set_tooltip_text(Some("Günlüğü Kopyala"));
         btn_copy.add_css_class("flat");
-        btn_copy.add_css_class("circular");
         ctrl_bar.append(&btn_copy);
 
-        let btn_clear = gtk4::Button::from_icon_name(crate::ui::icons::pick(crate::ui::icons::DELETE));
+        let btn_clear = gtk4::Button::from_icon_name(crate::ui::icons::pick(crate::ui::icons::CLEAR));
         btn_clear.set_tooltip_text(Some("Temizle"));
         btn_clear.add_css_class("flat");
-        btn_clear.add_css_class("circular");
         ctrl_bar.append(&btn_clear);
 
         let btn_close = gtk4::Button::from_icon_name(crate::ui::icons::pick(crate::ui::icons::COLLAPSE));
         btn_close.set_tooltip_text(Some("Konsolu Gizle"));
         btn_close.add_css_class("flat");
-        btn_close.add_css_class("circular");
         ctrl_bar.append(&btn_close);
 
         panel_box.append(&ctrl_bar);
@@ -108,7 +105,7 @@ impl LogRevealer {
         let toggle_btn = gtk4::ToggleButton::builder()
             .icon_name(crate::ui::icons::pick(crate::ui::icons::TERMINAL))
             .tooltip_text("Günlük Konsolunu Göster/Gizle")
-            .css_classes(["flat", "circular"])
+            .css_classes(["flat"])
             .build();
         status_bar.append(&toggle_btn);
 
