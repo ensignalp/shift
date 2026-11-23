@@ -1,44 +1,5 @@
 /*
- * Shift — minimal app stylesheet.
- *
- * Rules: no fonts, no hard-coded colours, no window-control styling.
- * Everything is derived from the active GTK theme (Adwaita/Default, Breeze,
- * Greybird, ...) through the standard named colours, so light/dark mode,
- * accent/selection colour and system font are followed automatically.
- * Spacing scale: 4 / 8 / 12 / 16 / 24 px.
+ * Structural helpers only. Colours, radii and component styling live in
+ * src/ui/theme.rs (rendered per light/dark mode and desktop accent).
  */
-
-/* Typography helpers (relative to the system font) */
-.title-1 { font-size: 1.6em; font-weight: 700; }
-.title-4 { font-size: 1.1em; font-weight: 700; }
-.heading { font-weight: 700; }
-.caption { font-size: 0.9em; }
-.bold    { font-weight: 700; }
-
-/* File table: flush with the window, theme selection colour */
-.data-table,
-scrolledwindow.flush {
-    border: none;
-    box-shadow: none;
-}
-
-/* Form sections (site manager, quick connect) */
-.form-section-title {
-    font-weight: 700;
-    margin-bottom: 4px;
-}
-
-/* Window-integrated toolbar used when the desktop draws the title bar */
-.app-toolbar {
-    padding: 4px 8px;
-}
-
-/* Bottom status line */
-.status-line {
-    padding: 2px 8px;
-}
-
-/* Log console */
-.log-console-view {
-    font-size: 0.92em;
-}
+.app-toolbar { padding: 4px 8px; }

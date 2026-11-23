@@ -6,13 +6,16 @@ mod ui;
 use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 use gtk4::prelude::*;
+use std::cell::RefCell;
 use ui::widgets::{self, Field, Toaster};
 use models::{FileItem, ServerProfile};
 use engine::{BackendEngine, ClientConnection};
 use ui::explorer::ExplorerView;
-use ui::log_revealer::LogRevealer;
-use ui::onboarding::OnboardingView;
-use ui::site_manager::SiteManagerWindow;
+use ui::hosts::HostsPage;
+use ui::icons;
+use ui::log_page::LogPage;
+use ui::theme::Theme;
+use ui::transfers::{TransferState, TransfersPage};
 
 const APP_ID: &str = "com.ensignsoft.Shift";
 
@@ -23,9 +26,30 @@ pub enum AppEvent {
     DirectoryListed(String, Vec<FileItem>),
     Toast(String),
     Error(String),
+    /// id, file name, is_upload, state
+    Transfer(u64, String, bool, TransferState),
+}
+
+static NEXT_TRANSFER: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
+
+fn next_transfer_id() -> u64 {
+    NEXT_TRANSFER.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
+}
+
+thread_local! {
+    static THEME: RefCell<Option<Rc<Theme>>> = const { RefCell::new(None) };
 }
 
 fn main() -> glib::ExitCode {
+    // Shift renders its own design on top of GTK's built-in theme. A forced
+    // GTK_THEME (e.g. "Breeze:dark") would replace that base, so keep it only
+    // as a light/dark hint for ui::theme.
+    if let Ok(t) = std::env::var("GTK_THEME") {
+        if !t.to_lowercase().starts_with("adwaita") {
+            std::env::set_var("SHIFT_HOST_GTK_THEME", &t);
+            std::env::remove_var("GTK_THEME");
+        }
+    }
     let app = gtk4::Application::builder()
         .application_id(APP_ID)
         .build();
@@ -41,17 +65,13 @@ fn main() -> glib::ExitCode {
             icon_theme.add_resource_path("/com/ensignsoft/Shift/icons");
         }
 
-        // 3. Embedded Application CSS (No missing file errors)
+        // Small structural helpers (typography); colours live in ui::theme.
         let css_provider = gtk4::CssProvider::new();
         css_provider.load_from_string(include_str!("../data/style.css"));
-        gtk4::style_context_add_provider_for_display(
-            &display,
-            &css_provider,
-            gtk4::STYLE_PROVIDER_PRIORITY_APPLICATION,
-        );
+        gtk4::style_context_add_provider_for_display(&display, &css_provider, gtk4::STYLE_PROVIDER_PRIORITY_APPLICATION - 1);
 
-        // Desktop accent colour for GTK's built-in theme (no-op for other themes).
-        ui::accent::install(&display);
+        let theme = Theme::install(&display);
+        THEME.with(|t| *t.borrow_mut() = Some(theme));
     });
 
     app.connect_activate(build_ui);
@@ -62,100 +82,35 @@ fn build_ui(app: &gtk4::Application) {
     let window = gtk4::ApplicationWindow::builder()
         .application(app)
         .title("Shift")
-        .default_width(733)
-        .default_height(780)
-        .width_request(580)
-        .height_request(560)
+        .default_width(1080)
+        .default_height(700)
+        .width_request(720)
+        .height_request(480)
         .icon_name("com.ensignsoft.Shift")
+        .css_classes(["shift"])
         .build();
 
     let toaster = Toaster::new();
-    let root_vbox = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
 
-    // --- Window chrome -------------------------------------------------
-    // GNOME-family desktops expect client-side header bars; KDE, XFCE, MATE,
-    // Cinnamon, LXQt... draw their own title bar and buttons. In that case we
-    // leave decoration to the window manager and use a plain toolbar instead,
-    // so the title bar, button layout and button theme are the desktop's own.
-    let csd = use_client_side_decorations();
-
-    let win_title = gtk4::Label::builder().label("Shift").css_classes(["heading"]).build();
-    let win_subtitle = gtk4::Label::builder()
-        .label("Sunucuya bağlı değil")
-        .css_classes(["caption", "dim-label"])
-        .ellipsize(gtk4::pango::EllipsizeMode::Middle)
-        .build();
-
-    let start_box = gtk4::Box::new(gtk4::Orientation::Horizontal, 4);
-    let btn_sites = widgets::icon_button(ui::icons::SERVER, "Site Yöneticisi");
-    start_box.append(&btn_sites);
-
-    let btn_disconnect = gtk4::Button::builder()
-        .label("Bağlantıyı Kes")
-        .tooltip_text("Sunucu bağlantısını sonlandır")
-        .valign(gtk4::Align::Center)
-        .visible(false)
-        .build();
-    start_box.append(&btn_disconnect);
-
-    let end_box = gtk4::Box::new(gtk4::Orientation::Horizontal, 4);
-    let btn_transfers = widgets::icon_button(ui::icons::TRANSFERS, "Dosya Aktarımları Kuyruğu");
-    end_box.append(&btn_transfers);
-
-    let menu_button = gtk4::MenuButton::builder()
-        .icon_name(ui::icons::pick(ui::icons::MENU))
-        .tooltip_text("Ana Menü")
-        .valign(gtk4::Align::Center)
-        .build();
-    menu_button.add_css_class("flat");
-
-    let menu_model = gio::Menu::new();
-    let sec_main = gio::Menu::new();
-    sec_main.append(Some("Site Yöneticisi"), Some("app.site-manager"));
-    sec_main.append(Some("Günlük Konsolunu Göster/Gizle"), Some("app.toggle-log"));
-    menu_model.append_section(None, &sec_main);
-    let sec_theme = gio::Menu::new();
-    sec_theme.append(Some("Sistem Teması"), Some("app.color-scheme::system"));
-    sec_theme.append(Some("Açık"), Some("app.color-scheme::light"));
-    sec_theme.append(Some("Koyu"), Some("app.color-scheme::dark"));
-    menu_model.append_section(Some("Görünüm"), &sec_theme);
-    let sec_about = gio::Menu::new();
-    sec_about.append(Some("Shift Hakkında"), Some("app.about"));
-    menu_model.append_section(None, &sec_about);
-    menu_button.set_menu_model(Some(&menu_model));
-    end_box.append(&menu_button);
-
-    if csd {
-        let title_box = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
-        title_box.set_valign(gtk4::Align::Center);
-        title_box.append(&win_title);
-        title_box.append(&win_subtitle);
+    // GNOME-family desktops expect a client-side header bar; KDE, XFCE, MATE,
+    // Cinnamon... draw their own title bar and buttons (with their own layout
+    // and theme). Override with SHIFT_CSD=1/0.
+    if use_client_side_decorations() {
         let header_bar = gtk4::HeaderBar::new();
-        header_bar.pack_start(&start_box);
-        header_bar.set_title_widget(Some(&title_box));
-        header_bar.pack_end(&end_box);
+        header_bar.set_title_widget(Some(&gtk4::Label::builder().label("Shift").css_classes(["heading"]).build()));
         window.set_titlebar(Some(&header_bar));
-    } else {
-        // The WM title bar already shows the window title.
-        let toolbar = gtk4::Box::new(gtk4::Orientation::Horizontal, 8);
-        toolbar.add_css_class("app-toolbar");
-        win_subtitle.set_hexpand(true);
-        win_subtitle.set_xalign(0.0);
-        toolbar.append(&start_box);
-        toolbar.append(&win_subtitle);
-        toolbar.append(&end_box);
-        root_vbox.append(&toolbar);
-        root_vbox.append(&gtk4::Separator::new(gtk4::Orientation::Horizontal));
     }
 
-    // ViewStack
-    let view_stack = gtk4::Stack::builder()
+    let page_stack = gtk4::Stack::builder()
         .vexpand(true)
         .hexpand(true)
+        .transition_type(gtk4::StackTransitionType::Crossfade)
+        .transition_duration(120)
         .build();
 
     let active_connection: Arc<Mutex<Option<ClientConnection>>> = Arc::new(Mutex::new(None));
-    let log_rev = Rc::new(LogRevealer::new());
+    let log_rev = Rc::new(LogPage::new());
+    let transfers = Rc::new(TransfersPage::new());
 
     // High performance async channel for thread-safe cross-thread UI communication
     let (tx, rx) = async_channel::unbounded::<AppEvent>();
@@ -208,11 +163,14 @@ fn build_ui(app: &gtk4::Application) {
                     let conn = Arc::clone(&conn);
                     let r_dir = remote_dir.clone();
                     let _ = tx.send_blocking(AppEvent::Log("status".into(), format!("Yükleniyor: {} -> {}", path.display(), remote_file_path)));
+                    let tid = next_transfer_id();
+                    let _ = tx.send_blocking(AppEvent::Transfer(tid, file_name.clone(), true, TransferState::Running));
                     std::thread::spawn(move || {
                         let mut lock = conn.lock().unwrap();
                         if let Some(ref mut c) = *lock {
                             match BackendEngine::upload_file(c, &path, &remote_file_path) {
                                 Ok(()) => {
+                                    let _ = tx.send_blocking(AppEvent::Transfer(tid, file_name.clone(), true, TransferState::Done));
                                     let _ = tx.send_blocking(AppEvent::Log("response".into(), format!("226 Yükleme tamamlandı: {}", file_name)));
                                     let _ = tx.send_blocking(AppEvent::Toast(format!("Yüklendi: {}", file_name)));
                                     if let Ok(items) = BackendEngine::list_directory(c, &r_dir) {
@@ -220,6 +178,7 @@ fn build_ui(app: &gtk4::Application) {
                                     }
                                 }
                                 Err(e) => {
+                                    let _ = tx.send_blocking(AppEvent::Transfer(tid, file_name.clone(), true, TransferState::Failed(e.clone())));
                                     let _ = tx.send_blocking(AppEvent::Log("error".into(), e.clone()));
                                     let _ = tx.send_blocking(AppEvent::Error(e));
                                 }
@@ -248,16 +207,20 @@ fn build_ui(app: &gtk4::Application) {
         let local_disp = local_path.display().to_string();
 
         let _ = tx.send_blocking(AppEvent::Log("status".into(), format!("İndiriliyor: {} -> {}", item_path, local_disp)));
+        let tid = next_transfer_id();
+        let _ = tx.send_blocking(AppEvent::Transfer(tid, item_name.clone(), false, TransferState::Running));
 
         std::thread::spawn(move || {
             let mut lock = conn.lock().unwrap();
             if let Some(ref mut c) = *lock {
                 match BackendEngine::download_file(c, &item_path, &local_path) {
                     Ok(()) => {
+                        let _ = tx.send_blocking(AppEvent::Transfer(tid, item_name.clone(), false, TransferState::Done));
                         let _ = tx.send_blocking(AppEvent::Log("response".into(), format!("226 İndirme tamamlandı: {}", item_name)));
                         let _ = tx.send_blocking(AppEvent::Toast(format!("İndirildi: {} (İndirilenler klasörüne kaydedildi)", item_name)));
                     }
                     Err(e) => {
+                        let _ = tx.send_blocking(AppEvent::Transfer(tid, item_name.clone(), false, TransferState::Failed(e.clone())));
                         let _ = tx.send_blocking(AppEvent::Log("error".into(), e.clone()));
                         let _ = tx.send_blocking(AppEvent::Error(e));
                     }
@@ -423,7 +386,7 @@ fn build_ui(app: &gtk4::Application) {
         on_rename,
     ));
 
-    view_stack.add_named(&explorer_view.container, Some("explorer"));
+
 
     // Global Connect Logic (Shared by Onboarding and Site Manager)
     let do_connect = {
@@ -467,67 +430,161 @@ fn build_ui(app: &gtk4::Application) {
         }
     };
 
-    // Onboarding View
-    let w_for_sm = window.clone();
-    let do_connect_for_sm = do_connect.clone();
-    let onboarding_view = Rc::new(OnboardingView::new(
-        do_connect.clone(),
-        move || {
-            let do_conn = do_connect_for_sm.clone();
-            SiteManagerWindow::show(w_for_sm.upcast_ref(), move |srv| {
-                do_conn(srv);
-            });
-        },
-    ));
+    // ---------------------------------------------------------------- pages
+    let hosts = Rc::new(HostsPage::new(do_connect.clone()));
 
-    view_stack.add_named(&onboarding_view.container, Some("onboarding"));
-    view_stack.set_visible_child_name("onboarding");
+    let files_page = gtk4::Box::builder()
+        .orientation(gtk4::Orientation::Vertical)
+        .spacing(16)
+        .margin_top(24).margin_bottom(16).margin_start(28).margin_end(28)
+        .build();
+    let files_head = gtk4::Box::new(gtk4::Orientation::Horizontal, 10);
+    files_head.append(&gtk4::Label::builder().label("Dosyalar").css_classes(["page-title"]).build());
+    let files_dot = gtk4::Box::builder().css_classes(["status-dot", "online"]).valign(gtk4::Align::Center).build();
+    files_head.append(&files_dot);
+    let files_server = gtk4::Label::builder().css_classes(["dim"]).hexpand(true).xalign(0.0)
+        .ellipsize(gtk4::pango::EllipsizeMode::Middle).build();
+    files_head.append(&files_server);
+    let btn_disconnect = gtk4::Button::builder().label("Bağlantıyı kes").css_classes(["danger"]).build();
+    files_head.append(&btn_disconnect);
+    files_page.append(&files_head);
+    files_page.append(&explorer_view.container);
 
-    root_vbox.append(&view_stack);
-    // The hidden log panel must not compete with the main view for space.
-    log_rev.container.set_vexpand(false);
-    root_vbox.append(&log_rev.container);
+    page_stack.add_named(&hosts.container, Some("hosts"));
+    page_stack.add_named(&files_page, Some("files"));
+    page_stack.add_named(&transfers.container, Some("transfers"));
+    page_stack.add_named(&log_rev.container, Some("log"));
 
-    toaster.overlay.set_child(Some(&root_vbox));
+    // -------------------------------------------------------------- sidebar
+    let sidebar = gtk4::Box::builder()
+        .orientation(gtk4::Orientation::Vertical)
+        .spacing(4)
+        .width_request(220)
+        .hexpand(false)
+        .css_classes(["sidebar"])
+        .build();
+    let brand = gtk4::Box::builder().orientation(gtk4::Orientation::Horizontal).spacing(10)
+        .margin_start(6).margin_top(2).margin_bottom(14).build();
+    let logo_bytes = glib::Bytes::from_static(include_bytes!("../data/shift_logo_48.png"));
+    let logo = match gtk4::gdk::Texture::from_bytes(&logo_bytes) {
+        Ok(t) => gtk4::Image::from_paintable(Some(&t)),
+        Err(_) => gtk4::Image::from_icon_name("com.ensignsoft.Shift"),
+    };
+    logo.set_pixel_size(28);
+    brand.append(&logo);
+    brand.append(&gtk4::Label::builder().label("Shift").css_classes(["brand"]).build());
+    sidebar.append(&brand);
+
+    let nav = |icon: &[&'static str], label: &str, page: &str| -> gtk4::ToggleButton {
+        let b = gtk4::ToggleButton::builder().css_classes(["nav-item"]).build();
+        let row = gtk4::Box::new(gtk4::Orientation::Horizontal, 12);
+        row.append(&gtk4::Image::from_icon_name(icons::pick(icon)));
+        row.append(&gtk4::Label::builder().label(label).xalign(0.0).hexpand(true).build());
+        b.set_child(Some(&row));
+        let stack = page_stack.clone();
+        let name = page.to_string();
+        b.connect_toggled(move |b| {
+            if b.is_active() {
+                stack.set_visible_child_name(&name);
+            }
+        });
+        b
+    };
+    let nav_hosts = nav(icons::SERVER, "Sunucular", "hosts");
+    let nav_files = nav(icons::FOLDER, "Dosyalar", "files");
+    let nav_transfers = nav(icons::TRANSFERS, "Aktarımlar", "transfers");
+    let nav_log = nav(icons::TERMINAL, "Günlük", "log");
+    for b in [&nav_files, &nav_transfers, &nav_log] {
+        b.set_group(Some(&nav_hosts));
+    }
+    nav_hosts.set_active(true);
+    nav_files.set_sensitive(false);
+    nav_files.set_tooltip_text(Some("Önce bir sunucuya bağlanın"));
+    for b in [&nav_hosts, &nav_files, &nav_transfers, &nav_log] {
+        sidebar.append(b);
+    }
+
+    let sb_spacer = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
+    sb_spacer.set_vexpand(true);
+    sidebar.append(&sb_spacer);
+
+    // Connection status card (Kota "Canlı" card)
+    let conn_card = gtk4::Box::builder().orientation(gtk4::Orientation::Vertical).spacing(4)
+        .css_classes(["card", "padded"]).margin_bottom(8).build();
+    let conn_row = gtk4::Box::new(gtk4::Orientation::Horizontal, 8);
+    let conn_dot = gtk4::Box::builder().css_classes(["status-dot"]).valign(gtk4::Align::Center).build();
+    conn_row.append(&conn_dot);
+    let conn_title = gtk4::Label::builder().label("Bağlı değil").xalign(0.0).css_classes(["heading"])
+        .ellipsize(gtk4::pango::EllipsizeMode::Middle).build();
+    conn_row.append(&conn_title);
+    conn_card.append(&conn_row);
+    conn_card.append(&log_rev.last_line);
+    sidebar.append(&conn_card);
+
+    // Settings menu
+    let menu_model = gio::Menu::new();
+    let sec_theme = gio::Menu::new();
+    sec_theme.append(Some("Sistemi izle"), Some("app.color-scheme::system"));
+    sec_theme.append(Some("Açık"), Some("app.color-scheme::light"));
+    sec_theme.append(Some("Koyu"), Some("app.color-scheme::dark"));
+    menu_model.append_section(Some("Görünüm"), &sec_theme);
+    let sec_about = gio::Menu::new();
+    sec_about.append(Some("Shift Hakkında"), Some("app.about"));
+    menu_model.append_section(None, &sec_about);
+    let settings_btn = gtk4::MenuButton::builder()
+        .menu_model(&menu_model)
+        .css_classes(["nav-item"])
+        .direction(gtk4::ArrowType::Up)
+        .build();
+    let srow = gtk4::Box::new(gtk4::Orientation::Horizontal, 12);
+    srow.append(&gtk4::Image::from_icon_name(icons::pick(&["emblem-system-symbolic", "preferences-system-symbolic", "open-menu-symbolic"])));
+    srow.append(&gtk4::Label::builder().label("Ayarlar").xalign(0.0).hexpand(true).build());
+    settings_btn.set_child(Some(&srow));
+    sidebar.append(&settings_btn);
+
+    // --------------------------------------------------------------- layout
+    let root = gtk4::Box::new(gtk4::Orientation::Horizontal, 0);
+    root.append(&sidebar);
+    root.append(&page_stack);
+    toaster.overlay.set_child(Some(&root));
     window.set_child(Some(&toaster.overlay));
 
-    // Receiver polling loop attached to GLib Main Context
+    // ---------------------------------------------------------- event pump
     let log_event = Rc::clone(&log_rev);
     let exp_event = Rc::clone(&explorer_view);
-    let title_event = win_subtitle.clone();
-    let win_title_event = window.clone();
-    let btn_disc_event = btn_disconnect.clone();
-    let btn_sites_event = btn_sites.clone();
-    let stack_event = view_stack.clone();
+    let transfers_event = Rc::clone(&transfers);
     let toast_event = toaster.clone();
-    let win_err = window.clone();
+    let win_event = window.clone();
+    let (files_server_ev, conn_title_ev, conn_dot_ev) = (files_server.clone(), conn_title.clone(), conn_dot.clone());
+    let (nav_files_ev, nav_transfers_ev) = (nav_files.clone(), nav_transfers.clone());
 
     glib::timeout_add_local(std::time::Duration::from_millis(50), move || {
         while let Ok(event) = rx.try_recv() {
             match event {
-                AppEvent::Log(lvl, msg) => {
-                    log_event.append_log(&lvl, &msg);
-                }
+                AppEvent::Log(lvl, msg) => log_event.append_log(&lvl, &msg),
                 AppEvent::Connected(server_str, items) => {
-                    title_event.set_label(&server_str);
-                    win_title_event.set_title(Some(&format!("{} — Shift", server_str)));
-                    gtk4::prelude::GtkWindowExt::set_focus(&win_title_event, None::<&gtk4::Widget>);
-                    btn_disc_event.set_visible(true);
-                    btn_sites_event.set_visible(false);
+                    files_server_ev.set_label(&server_str);
+                    conn_title_ev.set_label(&server_str);
+                    conn_dot_ev.add_css_class("online");
+                    win_event.set_title(Some(&format!("{} — Shift", server_str)));
                     exp_event.set_items("/", items);
-                    stack_event.set_visible_child_name("explorer");
+                    nav_files_ev.set_sensitive(true);
+                    nav_files_ev.set_tooltip_text(None);
+                    nav_files_ev.set_active(true);
+                    gtk4::prelude::GtkWindowExt::set_focus(&win_event, None::<&gtk4::Widget>);
                     toast_event.show(&format!("Bağlandı: {}", server_str));
                 }
-                AppEvent::DirectoryListed(path, items) => {
-                    exp_event.set_items(&path, items);
-                }
-                AppEvent::Toast(msg) => {
-                    toast_event.show(&msg);
+                AppEvent::DirectoryListed(path, items) => exp_event.set_items(&path, items),
+                AppEvent::Toast(msg) => toast_event.show(&msg),
+                AppEvent::Transfer(id, name, upload, state) => {
+                    transfers_event.update(id, &name, upload, state);
+                    let n = *transfers_event.active.borrow();
+                    nav_transfers_ev.set_tooltip_text(if n > 0 { Some("Süren aktarımlar var") } else { None });
                 }
                 AppEvent::Error(err) => {
                     let err_copy = err.clone();
                     let t_copy = toast_event.clone();
-                    widgets::error(&win_err, &err, move || {
+                    widgets::error(&win_event, &err, move || {
                         if let Some(display) = gtk4::gdk::Display::default() {
                             display.clipboard().set_text(&err_copy);
                         }
@@ -539,89 +596,49 @@ fn build_ui(app: &gtk4::Application) {
         glib::ControlFlow::Continue
     });
 
-    // Site Manager button click
-    let w_sm = window.clone();
-    let do_conn_sm = do_connect.clone();
-    let onb_reload_sm = onboarding_view.reload_saved.clone();
-    btn_sites.connect_clicked(move |_| {
-        let do_conn = do_conn_sm.clone();
-        let reload = onb_reload_sm.clone();
-        SiteManagerWindow::show(w_sm.upcast_ref(), move |srv| {
-            reload();
-            do_conn(srv);
-        });
-    });
-
-    // Disconnect button click
+    // Disconnect
     let conn_disc = Arc::clone(&active_connection);
-    let view_stack_disc = view_stack.clone();
-    let win_title_disc = win_subtitle.clone();
-    let win_disc = window.clone();
-    let btn_disc_disc = btn_disconnect.clone();
-    let btn_sites_disc = btn_sites.clone();
-    let log_disc = Rc::clone(&log_rev);
-    let onb_reload_disc = onboarding_view.reload_saved.clone();
-
+    let (win_disc, log_disc) = (window.clone(), Rc::clone(&log_rev));
+    let (conn_title_d, conn_dot_d, nav_hosts_d, nav_files_d) = (conn_title.clone(), conn_dot.clone(), nav_hosts.clone(), nav_files.clone());
+    let hosts_reload = Rc::clone(&hosts.reload);
     btn_disconnect.connect_clicked(move |_| {
         *conn_disc.lock().unwrap() = None;
-        win_title_disc.set_label("Sunucuya bağlı değil");
+        conn_title_d.set_label("Bağlı değil");
+        conn_dot_d.remove_css_class("online");
         win_disc.set_title(Some("Shift"));
-        btn_disc_disc.set_visible(false);
-        btn_sites_disc.set_visible(true);
-        onb_reload_disc();
-        view_stack_disc.set_visible_child_name("onboarding");
+        nav_hosts_d.set_active(true);
+        nav_files_d.set_sensitive(false);
+        nav_files_d.set_tooltip_text(Some("Önce bir sunucuya bağlanın"));
+        hosts_reload();
         log_disc.append_log("status", "Bağlantı sonlandırıldı.");
     });
 
-    // Register actions for Hamburger Menu
+    // ------------------------------------------------------------- actions
     let act_site_mgr = gio::SimpleAction::new("site-manager", None);
-    let w_sm2 = window.clone();
-    let do_conn_sm2 = do_connect.clone();
-    let onb_reload_sm2 = onboarding_view.reload_saved.clone();
+    let (nh, nav_h) = (Rc::clone(&hosts.new_host), nav_hosts.clone());
     act_site_mgr.connect_activate(move |_, _| {
-        let do_conn = do_conn_sm2.clone();
-        let reload = onb_reload_sm2.clone();
-        SiteManagerWindow::show(w_sm2.upcast_ref(), move |srv| {
-            reload();
-            do_conn(srv);
-        });
+        nav_h.set_active(true);
+        nh();
     });
     app.add_action(&act_site_mgr);
+    app.set_accels_for_action("app.site-manager", &["<Control>n"]);
 
-    let act_toggle_log = gio::SimpleAction::new("toggle-log", None);
-    let log_rev_toggle = Rc::clone(&log_rev);
-    act_toggle_log.connect_activate(move |_, _| {
-        let is_open = log_rev_toggle.revealer.reveals_child();
-        log_rev_toggle.revealer.set_reveal_child(!is_open);
-    });
-    app.add_action(&act_toggle_log);
+    let act_log = gio::SimpleAction::new("toggle-log", None);
+    let nav_l = nav_log.clone();
+    act_log.connect_activate(move |_, _| nav_l.set_active(true));
+    app.add_action(&act_log);
 
-    // Appearance: follow the system by default; explicit light/dark on request.
-    let act_scheme = gio::SimpleAction::new_stateful(
-        "color-scheme",
-        Some(glib::VariantTy::STRING),
-        &"system".to_variant(),
-    );
-    if let Some(settings) = gtk4::Settings::default() {
-        let original = (settings.gtk_theme_name(), settings.is_gtk_application_prefer_dark_theme());
-        let mode = Rc::new(std::cell::RefCell::new(String::from("system")));
-        // GTK's built-in theme does not apply the desktop's dark preference by
-        // itself (libadwaita used to); follow it while in "system" mode.
-        follow_system_scheme(&settings, original.1);
-        let mode_n = Rc::clone(&mode);
-        let orig_n = original.1;
-        settings.connect_notify_local(Some("gtk-interface-color-scheme"), move |s, _| {
-            if mode_n.borrow().as_str() == "system" {
-                follow_system_scheme(s, orig_n);
+    let initial_mode = THEME.with(|t| t.borrow().as_ref().map(|t| t.mode()).unwrap_or_else(|| "system".into()));
+    let act_scheme = gio::SimpleAction::new_stateful("color-scheme", Some(glib::VariantTy::STRING), &initial_mode.to_variant());
+    act_scheme.connect_activate(move |act, param| {
+        let mode = param.and_then(|p| p.str()).unwrap_or("system").to_string();
+        THEME.with(|t| {
+            if let Some(t) = t.borrow().as_ref() {
+                t.set_mode(&mode);
             }
         });
-        act_scheme.connect_activate(move |act, param| {
-            let m = param.and_then(|p| p.str()).unwrap_or("system").to_string();
-            *mode.borrow_mut() = m.clone();
-            apply_color_scheme(&settings, &m, &original);
-            act.set_state(&m.to_variant());
-        });
-    }
+        act.set_state(&mode.to_variant());
+    });
     app.add_action(&act_scheme);
 
     let act_about = gio::SimpleAction::new("about", None);
@@ -634,8 +651,9 @@ fn build_ui(app: &gtk4::Application) {
             .logo_icon_name("com.ensignsoft.Shift")
             .authors(["Ensignsoft Mühendislik Ekibi"])
             .version(env!("CARGO_PKG_VERSION"))
-            .comments("Yüksek performanslı, güvenli ve modern bulut dosya aktarım istemcisi.")
+            .comments("FTP, FTPS ve SFTP dosya aktarım istemcisi.")
             .website("https://ensignsoft.com")
+            .css_classes(["shift-dialog"])
             .build();
         dialog.present();
     });
@@ -666,63 +684,6 @@ fn use_client_side_decorations() -> bool {
     desktop
         .split(':')
         .any(|d| matches!(d, "gnome" | "gnome-classic" | "gnome-flashback" | "pantheon" | "budgie" | "budgie-desktop" | "unity" | "cosmic" | "phosh"))
-}
-
-/// Set an enum GObject property by its nick, if the property exists in the
-/// running GTK (keeps us compatible with GTK < 4.20).
-fn set_enum_by_nick(obj: &impl IsA<glib::Object>, prop: &str, nick: &str) {
-    if let Some(pspec) = obj.find_property(prop) {
-        if let Some(class) = glib::EnumClass::with_type(pspec.value_type()) {
-            if let Some(value) = class.to_value_by_nick(nick) {
-                obj.set_property_from_value(prop, &value);
-            }
-        }
-    }
-}
-
-fn enum_nick(obj: &impl IsA<glib::Object>, prop: &str) -> Option<String> {
-    obj.find_property(prop)?;
-    let value = obj.property_value(prop);
-    glib::EnumValue::from_value(&value).map(|(_, v)| v.nick().to_string())
-}
-
-/// Use the theme's dark variant when the desktop prefers dark (GTK >= 4.20
-/// exposes the portal value as gtk-interface-color-scheme). Otherwise keep
-/// whatever the desktop configured (e.g. KDE writes prefer-dark/Breeze-Dark).
-fn follow_system_scheme(settings: &gtk4::Settings, orig_dark: bool) {
-    match enum_nick(settings, "gtk-interface-color-scheme").as_deref() {
-        Some("dark") => settings.set_gtk_application_prefer_dark_theme(true),
-        Some("light") => settings.set_gtk_application_prefer_dark_theme(false),
-        _ => settings.set_gtk_application_prefer_dark_theme(orig_dark),
-    }
-}
-
-fn apply_color_scheme(settings: &gtk4::Settings, mode: &str, original: &(Option<glib::GString>, bool)) {
-    // GTK >= 4.20 understands gtk-interface-color-scheme (default/light/dark).
-    let has_scheme = settings.find_property("gtk-interface-color-scheme").is_some();
-    let (orig_theme, orig_dark) = original;
-    let orig_theme = orig_theme.as_ref().map(|t| t.to_string()).unwrap_or_default();
-    let base_theme = orig_theme
-        .strip_suffix("-dark")
-        .or_else(|| orig_theme.strip_suffix("-Dark"))
-        .unwrap_or(&orig_theme)
-        .to_string();
-    match mode {
-        "dark" => {
-            if has_scheme { set_enum_by_nick(settings, "gtk-interface-color-scheme", "dark"); }
-            settings.set_gtk_application_prefer_dark_theme(true);
-        }
-        "light" => {
-            if has_scheme { set_enum_by_nick(settings, "gtk-interface-color-scheme", "light"); }
-            settings.set_gtk_application_prefer_dark_theme(false);
-            if base_theme != orig_theme { settings.set_gtk_theme_name(Some(&base_theme)); }
-        }
-        _ => {
-            if has_scheme { set_enum_by_nick(settings, "gtk-interface-color-scheme", "default"); }
-            settings.set_gtk_theme_name(Some(&orig_theme));
-            follow_system_scheme(settings, *orig_dark);
-        }
-    }
 }
 
 /// Debug aid: SHIFT_SNAPSHOT=/tmp/x.png renders the window to a PNG and quits.

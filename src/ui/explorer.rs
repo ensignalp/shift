@@ -51,7 +51,7 @@ impl ExplorerView {
         FDelete: Fn(String, bool) + 'static + Clone,
         FRename: Fn(String, String) + 'static + Clone,
     {
-        let container = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
+        let container = gtk4::Box::new(gtk4::Orientation::Vertical, 12);
         let current_path = Rc::new(RefCell::new("/".to_string()));
         let history_back: Rc<RefCell<Vec<String>>> = Rc::new(RefCell::new(Vec::new()));
         let history_forward: Rc<RefCell<Vec<String>>> = Rc::new(RefCell::new(Vec::new()));
@@ -62,10 +62,6 @@ impl ExplorerView {
         let action_bar = gtk4::Box::builder()
             .orientation(gtk4::Orientation::Horizontal)
             .spacing(6)
-            .margin_start(16)
-            .margin_end(16)
-            .margin_top(8)
-            .margin_bottom(8)
             .build();
 
         let btn_back = gtk4::Button::from_icon_name(crate::ui::icons::pick(crate::ui::icons::BACK));
@@ -88,15 +84,16 @@ impl ExplorerView {
 
         let path_box = gtk4::Box::builder()
             .orientation(gtk4::Orientation::Horizontal)
-            .spacing(2)
+            .spacing(0)
             .hexpand(true)
             .valign(gtk4::Align::Center)
+            .css_classes(["breadcrumb"])
             .build();
         action_bar.append(&path_box);
 
         // Upload Button
         let btn_upload = crate::ui::widgets::icon_label_button(crate::ui::icons::UPLOAD, "Dosya Yükle");
-        btn_upload.add_css_class("suggested-action");
+        btn_upload.add_css_class("accent");
         let on_up_clone = on_upload.clone();
         let cur_p_up = Rc::clone(&current_path);
         btn_upload.connect_clicked(move |_| on_up_clone(cur_p_up.borrow().clone()));
@@ -124,8 +121,8 @@ impl ExplorerView {
 
         // Search Entry: 155px width
         let search_entry = gtk4::SearchEntry::builder()
-            .placeholder_text("Dosyalarda ara...")
-            .width_request(155)
+            .placeholder_text("Bu klasörde ara")
+            .width_request(180)
             .build();
         action_bar.append(&search_entry);
 
@@ -138,7 +135,6 @@ impl ExplorerView {
         action_bar.append(&btn_hidden);
 
         container.append(&action_bar);
-        container.append(&gtk4::Separator::new(gtk4::Orientation::Horizontal));
 
         // 2. Classic Flat Table View
         // Columns: 0: name, 1: size_str, 2: perms, 3: date, 4: icon, 5: is_dir, 6: path, 7: raw_size
@@ -158,6 +154,7 @@ impl ExplorerView {
             .enable_tree_lines(false)
             .show_expanders(false)
             .headers_visible(true)
+            .css_classes(["data-table"])
             .build();
 
         // Col 1: Name with Lucide Icon
@@ -448,7 +445,9 @@ impl ExplorerView {
             .hexpand(true)
             .child(&tree_view)
             .build();
-        container.append(&scrolled);
+        let table_card = gtk4::Frame::builder().child(&scrolled).css_classes(["card", "files-card"]).build();
+        table_card.set_overflow(gtk4::Overflow::Hidden);
+        container.append(&table_card);
 
         let exp = Self {
             container,
@@ -596,10 +595,10 @@ impl ExplorerView {
         }
 
         let btn_root = gtk4::Button::builder()
-            .icon_name(crate::ui::icons::pick(crate::ui::icons::SERVER))
             .tooltip_text("Sunucu kökü")
             .css_classes(["flat"])
             .build();
+        btn_root.set_child(Some(&crate::ui::widgets::icon_label(crate::ui::icons::SERVER, "/")));
         self.path_box.append(&btn_root);
 
         let clean = path.trim_matches('/');

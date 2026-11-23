@@ -20,15 +20,11 @@ pub const DOWNLOAD: &[&str] = &["folder-download-symbolic", "document-save-symbo
 pub const TRANSFERS: &[&str] = &["folder-download-symbolic", "document-save-symbolic"];
 pub const RENAME: &[&str] = &["document-edit-symbolic", "edit-rename-symbolic"];
 pub const DELETE: &[&str] = &["user-trash-symbolic", "edit-delete-symbolic"];
-pub const MENU: &[&str] = &["open-menu-symbolic"];
 pub const SHOW_HIDDEN: &[&str] = &["view-reveal-symbolic", "view-visible-symbolic"];
 pub const HIDE_HIDDEN: &[&str] = &["view-conceal-symbolic", "view-hidden-symbolic"];
 pub const COPY: &[&str] = &["edit-copy-symbolic"];
 pub const CLEAR: &[&str] = &["edit-clear-all-symbolic", "edit-clear-symbolic"];
 pub const TERMINAL: &[&str] = &["utilities-terminal-symbolic"];
-pub const COLLAPSE: &[&str] = &["pan-down-symbolic", "go-down-symbolic"];
-pub const CONNECT: &[&str] = &["go-next-symbolic"];
-pub const SAVE: &[&str] = &["document-save-symbolic"];
 pub const SEPARATOR: &[&str] = &["pan-end-symbolic", "go-next-symbolic"];
 
 /// First candidate present in the current icon theme, else the first candidate

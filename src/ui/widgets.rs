@@ -78,16 +78,6 @@ impl FormSection {
         *self.rows.borrow_mut() = r + 1;
     }
 
-    /// Give the label column the same width across several sections.
-    pub fn align(sections: &[&FormSection]) {
-        let group = gtk4::SizeGroup::new(gtk4::SizeGroupMode::Horizontal);
-        for s in sections {
-            for l in s.labels.borrow().iter() {
-                group.add_widget(l);
-            }
-        }
-    }
-
     /// A full-width row (check boxes, button rows).
     pub fn wide(&self, widget: &impl IsA<gtk4::Widget>) {
         let r = *self.rows.borrow();
@@ -193,6 +183,8 @@ pub fn error<F: Fn() + 'static>(parent: &impl IsA<gtk4::Window>, body: &str, on_
 pub enum Field {
     Text(&'static str, String),
     Password(&'static str, String),
+    /// Check box; its value is "1" or "0".
+    Check(&'static str, bool),
 }
 
 /// Small modal form dialog. Calls `on_accept` with the field values in order.
@@ -202,6 +194,7 @@ where
 {
     let win = gtk4::Window::builder()
         .title(title)
+        .css_classes(["shift-dialog"])
         .modal(true)
         .resizable(false)
         .default_width(380)
@@ -226,6 +219,11 @@ where
                 form.row(label, &e);
                 first.get_or_insert_with(|| e.clone().upcast());
                 getters.push(Box::new(move || e.text().to_string()));
+            }
+            Field::Check(label, active) => {
+                let (b, cb) = check(label, None, active);
+                form.wide(&b);
+                getters.push(Box::new(move || if cb.is_active() { "1".into() } else { "0".into() }));
             }
             Field::Password(label, value) => {
                 let e = password_entry();
