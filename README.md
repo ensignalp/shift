@@ -63,11 +63,30 @@ cargo build --release
 ./target/release/shift
 ```
 
-## Kurulum (kullanıcı için)
+## Paketler (RPM, DEB, AppImage)
+
+```bash
+APPIMAGETOOL=/yol/appimagetool-x86_64.AppImage packaging/build-packages.sh
+# yalnızca bazıları: packaging/build-packages.sh rpm deb
+```
+
+Çıktılar `dist/` klasörüne yazılır:
+
+| Dosya | Kurulum |
+| --- | --- |
+| `shift-<sürüm>-1.<dist>.x86_64.rpm` | `sudo dnf install ./shift-*.rpm` |
+| `shift_<sürüm>_amd64.deb` | `sudo apt install ./shift_*_amd64.deb` |
+| `Shift-<sürüm>-x86_64.AppImage` | `chmod +x Shift-*.AppImage && ./Shift-*.AppImage` |
+
+Kurulan komut **`shift-client`**'tır (`shift` bir kabuk komutu olduğu için terminalden çalıştırılamaz). Uygulama menüsünde "Shift" olarak görünür.
+
+Paketler GTK 4 ve OpenSSL 3'ü **içermez**, sistemdekini kullanır. İkili, derlendiği sistemin glibc sürümünü ister; Fedora 44'te derlenen paket glibc 2.38+ ister: Fedora 39+, Ubuntu 24.04+, Debian 13+. Debian 12 (GTK 4.8) desteklenmez.
+
+## Elle kurulum (kullanıcı için)
 
 ```bash
 cargo build --release
-install -Dm755 target/release/shift ~/.local/bin/shift
+install -Dm755 target/release/shift ~/.local/bin/shift-client
 for s in 16 24 32 48 64 128 256 512; do
   install -Dm644 "data/icons/hicolor/${s}x${s}/apps/com.ensignsoft.Shift.png" \
     "$HOME/.local/share/icons/hicolor/${s}x${s}/apps/com.ensignsoft.Shift.png"
@@ -103,6 +122,9 @@ src/
     log_page.rs      Günlük sayfası
     widgets.rs       ortak bileşenler (diyaloglar, bildirim, form)
     icons.rs         simge adları
+packaging/
+  build-packages.sh  RPM, DEB ve AppImage üretir
+  linux/             AppStream metainfo
 data/
   logo/              ana logo (1568 px)
   icons/hicolor/     uygulama simgesi, 16–512 px
