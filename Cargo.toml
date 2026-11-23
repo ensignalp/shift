@@ -3,7 +3,7 @@ name = "shift"
 version = "1.0.0"
 edition = "2021"
 authors = ["Ensignsoft Mühendislik Ekibi", "Mustazafi"]
-description = "Shift - High Performance Cloud & FTP/SFTP Transfer Client"
+description = "Shift — FTP, FTPS ve SFTP için modern masaüstü dosya aktarım istemcisi (GTK4)"
 
 [dependencies]
 async-channel = "2.3"

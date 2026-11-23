@@ -256,9 +256,8 @@ impl HostsPage {
             .valign(gtk4::Align::Center)
             .halign(gtk4::Align::Center)
             .build();
-        let empty_icon = gtk4::Image::from_icon_name(icons::pick(icons::SERVER));
-        empty_icon.set_pixel_size(48);
-        empty_icon.add_css_class("dim");
+        let empty_icon = gtk4::Image::from_icon_name("com.ensignsoft.Shift");
+        empty_icon.set_pixel_size(96);
         empty.append(&empty_icon);
         empty.append(&gtk4::Label::builder().label("Henüz kayıtlı sunucu yok").css_classes(["heading"]).build());
         empty.append(&gtk4::Label::builder()

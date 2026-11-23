@@ -465,11 +465,7 @@ fn build_ui(app: &gtk4::Application) {
         .build();
     let brand = gtk4::Box::builder().orientation(gtk4::Orientation::Horizontal).spacing(10)
         .margin_start(6).margin_top(2).margin_bottom(14).build();
-    let logo_bytes = glib::Bytes::from_static(include_bytes!("../data/shift_logo_48.png"));
-    let logo = match gtk4::gdk::Texture::from_bytes(&logo_bytes) {
-        Ok(t) => gtk4::Image::from_paintable(Some(&t)),
-        Err(_) => gtk4::Image::from_icon_name("com.ensignsoft.Shift"),
-    };
+    let logo = gtk4::Image::from_icon_name("com.ensignsoft.Shift");
     logo.set_pixel_size(28);
     brand.append(&logo);
     brand.append(&gtk4::Label::builder().label("Shift").css_classes(["brand"]).build());

@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
   <gresource prefix="/com/ensignsoft/Shift">
-    <file alias="icons/scalable/apps/com.ensignsoft.Shift.png">icons/com.ensignsoft.Shift.png</file>
+    <file alias="icons/16x16/apps/com.ensignsoft.Shift.png">icons/hicolor/16x16/apps/com.ensignsoft.Shift.png</file>
+    <file alias="icons/24x24/apps/com.ensignsoft.Shift.png">icons/hicolor/24x24/apps/com.ensignsoft.Shift.png</file>
+    <file alias="icons/32x32/apps/com.ensignsoft.Shift.png">icons/hicolor/32x32/apps/com.ensignsoft.Shift.png</file>
+    <file alias="icons/48x48/apps/com.ensignsoft.Shift.png">icons/hicolor/48x48/apps/com.ensignsoft.Shift.png</file>
+    <file alias="icons/64x64/apps/com.ensignsoft.Shift.png">icons/hicolor/64x64/apps/com.ensignsoft.Shift.png</file>
+    <file alias="icons/128x128/apps/com.ensignsoft.Shift.png">icons/hicolor/128x128/apps/com.ensignsoft.Shift.png</file>
+    <file alias="icons/256x256/apps/com.ensignsoft.Shift.png">icons/hicolor/256x256/apps/com.ensignsoft.Shift.png</file>
+    <file alias="icons/512x512/apps/com.ensignsoft.Shift.png">icons/hicolor/512x512/apps/com.ensignsoft.Shift.png</file>
     <file alias="icons/scalable/actions/shift-add-symbolic.svg" preprocess="xml-stripblanks">icons/shift/scalable/actions/shift-add-symbolic.svg</file>
     <file alias="icons/scalable/actions/shift-archive-symbolic.svg" preprocess="xml-stripblanks">icons/shift/scalable/actions/shift-archive-symbolic.svg</file>
     <file alias="icons/scalable/actions/shift-back-symbolic.svg" preprocess="xml-stripblanks">icons/shift/scalable/actions/shift-back-symbolic.svg</file>
