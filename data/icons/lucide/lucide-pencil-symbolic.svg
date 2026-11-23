@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- @license lucide-static v1.57.0 - ISC -->
+
+<svg
+   class="lucide lucide-pencil"
+   width="24"
+   height="24"
+   viewBox="0 0 24 24"
+   fill="none"
+   stroke="currentColor"
+   stroke-width="1.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   version="1.1"
+   id="svg2"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs2" />
+  <path
+     style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#000000;stroke:none;stroke-linecap:butt;stroke-linejoin:miter;enable-background:accumulate;stop-color:#000000;stop-opacity:1;opacity:1"
+     d="m 19.349609,1.2050781 c -0.912475,-0.05379 -1.894307,0.2929448 -2.691406,1.0898438 L 3.3125,15.644531 C 2.9938805,15.96261 2.7569823,16.352752 2.625,16.783203 a 0.750075,0.750075 0 0 0 0,0.0039 l -1.3222656,4.351563 a 0.750075,0.750075 0 0 0 0,0.002 c -0.2731438,0.914006 0.6430747,1.829299 1.5566406,1.554687 a 0.750075,0.750075 0 0 0 0.00195,0 L 7.2148437,21.375 C 7.6454255,21.244041 8.0386792,21.009139 8.3574219,20.691406 L 21.705078,7.3417969 C 22.502177,6.5448979 22.848483,5.5628794 22.794922,4.6503906 22.741361,3.7379018 22.321164,2.9111627 21.705078,2.2949219 21.088992,1.678681 20.262085,1.2588682 19.349609,1.2050781 Z m -0.08789,1.4960938 c 0.499399,0.029439 1.002399,0.2737877 1.382812,0.6542969 0.380414,0.3805091 0.62303,0.8834057 0.652344,1.3828124 0.02931,0.4994068 -0.120443,1.0112017 -0.652344,1.5429688 L 7.296875,19.628906 c -0.1449109,0.144452 -0.3218215,0.252962 -0.5175781,0.3125 v -0.002 L 2.875,21.123047 4.0605469,17.222656 c 0.060229,-0.19492 0.1660563,-0.373511 0.3105468,-0.517578 a 0.750075,0.750075 0 0 0 0.00195,0 L 17.71875,3.3554688 c 0.531901,-0.5317671 1.043569,-0.6837363 1.542969,-0.6542969 z"
+     id="path1" />
+  <path
+     style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#000000;stroke:none;stroke-linecap:butt;stroke-linejoin:miter;enable-background:accumulate;stop-color:#000000;stop-opacity:1;opacity:1"
+     d="m 15,4.25 a 0.75,0.75 0 0 0 -0.53125,0.21875 0.75,0.75 0 0 0 0,1.0625 l 4,4 a 0.75,0.75 0 0 0 1.0625,0 0.75,0.75 0 0 0 0,-1.0625 l -4,-4 A 0.75,0.75 0 0 0 15,4.25 Z"
+     id="path2" />
+</svg>

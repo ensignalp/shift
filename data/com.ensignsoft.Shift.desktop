@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Shift
+GenericName=Dosya ve Bulut Aktarım İstemcisi
+Comment=Ensignsoft modern FTP/SFTP bulut istemcisi
+Exec=/home/mustazafi/YAZILIM/shift/main.py %u
+Icon=com.ensignsoft.Shift
+Terminal=false
+Type=Application
+Categories=Network;FileTransfer;GNOME;GTK;
+StartupNotify=true
+StartupWMClass=com.ensignsoft.Shift
+X-GNOME-UsesNotifications=true

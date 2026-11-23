@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- @license lucide-static v1.57.0 - ISC -->
+
+<svg
+   class="lucide lucide-sliders"
+   width="24"
+   height="24"
+   viewBox="0 0 24 24"
+   fill="none"
+   stroke="currentColor"
+   stroke-width="1.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   version="1.1"
+   id="svg9"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs9" />
+  <path
+     style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#000000;stroke:none;stroke-linecap:butt;stroke-linejoin:miter;enable-background:accumulate;stop-color:#000000;stop-opacity:1;opacity:1"
+     d="M 10,7.25 A 0.75,0.75 0 0 0 9.25,8 0.75,0.75 0 0 0 10,8.75 h 4 A 0.75,0.75 0 0 0 14.75,8 0.75,0.75 0 0 0 14,7.25 Z"
+     id="path1" />
+  <path
+     style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#000000;stroke:none;stroke-linecap:butt;stroke-linejoin:miter;enable-background:accumulate;stop-color:#000000;stop-opacity:1;opacity:1"
+     d="M 12,11.25 A 0.75,0.75 0 0 0 11.25,12 v 9 A 0.75,0.75 0 0 0 12,21.75 0.75,0.75 0 0 0 12.75,21 V 12 A 0.75,0.75 0 0 0 12,11.25 Z"
+     id="path2" />
+  <path
+     style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#000000;stroke:none;stroke-linecap:butt;stroke-linejoin:miter;enable-background:accumulate;stop-color:#000000;stop-opacity:1;opacity:1"
+     d="M 12,2.25 A 0.75,0.75 0 0 0 11.25,3 V 8 A 0.75,0.75 0 0 0 12,8.75 0.75,0.75 0 0 0 12.75,8 V 3 A 0.75,0.75 0 0 0 12,2.25 Z"
+     id="path3" />
+  <path
+     style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#000000;stroke:none;stroke-linecap:butt;stroke-linejoin:miter;enable-background:accumulate;stop-color:#000000;stop-opacity:1;opacity:1"
+     d="M 17,15.25 A 0.75,0.75 0 0 0 16.25,16 0.75,0.75 0 0 0 17,16.75 h 4 A 0.75,0.75 0 0 0 21.75,16 0.75,0.75 0 0 0 21,15.25 Z"
+     id="path4" />
+  <path
+     style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#000000;stroke:none;stroke-linecap:butt;stroke-linejoin:miter;enable-background:accumulate;stop-color:#000000;stop-opacity:1;opacity:1"
+     d="M 19,2.25 A 0.75,0.75 0 0 0 18.25,3 v 9 A 0.75,0.75 0 0 0 19,12.75 0.75,0.75 0 0 0 19.75,12 V 3 A 0.75,0.75 0 0 0 19,2.25 Z"
+     id="path5" />
+  <path
+     style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#000000;stroke:none;stroke-linecap:butt;stroke-linejoin:miter;enable-background:accumulate;stop-color:#000000;stop-opacity:1;opacity:1"
+     d="M 19,15.25 A 0.75,0.75 0 0 0 18.25,16 v 5 A 0.75,0.75 0 0 0 19,21.75 0.75,0.75 0 0 0 19.75,21 V 16 A 0.75,0.75 0 0 0 19,15.25 Z"
+     id="path6" />
+  <path
+     style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#000000;stroke:none;stroke-linecap:butt;stroke-linejoin:miter;enable-background:accumulate;stop-color:#000000;stop-opacity:1;opacity:1"
+     d="M 3,13.25 A 0.75,0.75 0 0 0 2.25,14 0.75,0.75 0 0 0 3,14.75 H 7 A 0.75,0.75 0 0 0 7.75,14 0.75,0.75 0 0 0 7,13.25 Z"
+     id="path7" />
+  <path
+     style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#000000;stroke:none;stroke-linecap:butt;stroke-linejoin:miter;enable-background:accumulate;stop-color:#000000;stop-opacity:1;opacity:1"
+     d="M 5,2.25 A 0.75,0.75 0 0 0 4.25,3 v 7 A 0.75,0.75 0 0 0 5,10.75 0.75,0.75 0 0 0 5.75,10 V 3 A 0.75,0.75 0 0 0 5,2.25 Z"
+     id="path8" />
+  <path
+     style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#000000;stroke:none;stroke-linecap:butt;stroke-linejoin:miter;enable-background:accumulate;stop-color:#000000;stop-opacity:1;opacity:1"
+     d="M 5,13.25 A 0.75,0.75 0 0 0 4.25,14 v 7 A 0.75,0.75 0 0 0 5,21.75 0.75,0.75 0 0 0 5.75,21 V 14 A 0.75,0.75 0 0 0 5,13.25 Z"
+     id="path9" />
+</svg>

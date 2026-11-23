@@ -1,0 +1,144 @@
+/* Shift Global Typography: Space Grotesk for UI, JetBrains Mono for Code */
+* {
+    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.monospace, code, .code, textview, .console-terminal, textview text {
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Shift Modern Libadwaita Styles - Sporty & Clean */
+
+/* Clean flush files explorer - zero corner borders */
+.data-table,
+treeview.data-table,
+treeview,
+scrolledwindow {
+    border-radius: 0;
+    border: none;
+    outline: none;
+    box-shadow: none;
+}
+
+treeview.data-table:focus,
+treeview:focus {
+    outline: none;
+    border: none;
+}
+
+.data-table columnview {
+    background-color: transparent;
+}
+
+.data-table listview row {
+    padding-top: 4px;
+    padding-bottom: 4px;
+    border-radius: 8px;
+    margin: 2px 6px;
+    transition: background-color 150ms ease;
+}
+
+.data-table listview row:hover {
+    background-color: alpha(@accent_color, 0.08);
+}
+
+.data-table listview row:selected {
+    background-color: alpha(@accent_color, 0.22);
+    color: @accent_color;
+}
+
+.numeric {
+    font-variant-numeric: tabular-nums;
+    font-size: 11px;
+    font-weight: bold;
+    background-color: @accent_bg_color;
+    color: @accent_fg_color;
+    padding: 2px 8px;
+    border-radius: 9999px;
+}
+
+.success {
+    color: #2ec27e;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+/* Strictly compact hero logo (95px) */
+.hero-logo-img {
+    min-width: 95px;
+    min-height: 95px;
+}
+
+/* Top Horizontal Switcher for Site Manager */
+.top-switcher {
+    border-bottom: 1px solid alpha(@borders, 0.2);
+    padding: 4px 12px;
+}
+
+/* Icon-only Navigation Buttons */
+.nav-icon-btn {
+    padding: 6px;
+    min-width: 32px;
+    min-height: 32px;
+}
+
+/* Red Disconnect Button */
+.btn-disconnect-red {
+    background-color: #c01c28;
+    color: #ffffff;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 4px 12px;
+    transition: background-color 150ms ease;
+}
+
+.btn-disconnect-red:hover {
+    background-color: #e01b24;
+    color: #ffffff;
+}
+
+/* Console Resize Handle */
+.console-resize-handle {
+    min-height: 8px;
+    background-color: alpha(@window_fg_color, 0.04);
+    transition: background-color 150ms ease;
+}
+
+.console-resize-handle:hover {
+    background-color: alpha(@accent_color, 0.3);
+}
+
+.console-drag-handle {
+    min-width: 50px;
+    min-height: 5px;
+    border-radius: 9999px;
+    background-color: alpha(@window_fg_color, 0.25);
+    margin: 2px 0;
+}
+
+/* --- Clean & Crisp Window Controls (Close, Minimize, Maximize) --- */
+
+windowcontrols {
+    border-spacing: 6px;
+}
+
+windowcontrols button {
+    min-height: 28px;
+    min-width: 28px;
+    padding: 3px;
+    margin: 0 2px;
+    border-radius: 9999px;
+    transition: background-color 150ms ease, opacity 150ms ease;
+}
+
+windowcontrols button.close:hover {
+    background-color: #e01b24;
+    color: #ffffff;
+}
+
+windowcontrols button.maximize:hover,
+windowcontrols button.minimize:hover {
+    background-color: alpha(@window_fg_color, 0.12);
+}

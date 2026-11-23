@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- @license lucide-static v1.57.0 - ISC -->
+
+<svg
+   class="lucide lucide-alert-circle"
+   width="24"
+   height="24"
+   viewBox="0 0 24 24"
+   fill="none"
+   stroke="currentColor"
+   stroke-width="1.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   version="1.1"
+   id="svg2"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs2" />
+  <path
+     style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#000000;stroke:none;stroke-linecap:butt;stroke-linejoin:miter;enable-background:accumulate;stop-color:#000000;stop-opacity:1;opacity:1"
+     d="M 12,1.25 C 6.0718224,1.25 1.25,6.0718224 1.25,12 1.25,17.928178 6.0718224,22.75 12,22.75 17.928178,22.75 22.75,17.928178 22.75,12 22.75,6.0718224 17.928178,1.25 12,1.25 Z m 0,1.5 c 5.117517,0 9.25,4.1324826 9.25,9.25 0,5.117517 -4.132483,9.25 -9.25,9.25 C 6.8824826,21.25 2.75,17.117517 2.75,12 2.75,6.8824826 6.8824826,2.75 12,2.75 Z"
+     id="circle1" />
+  <path
+     style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#000000;stroke:none;stroke-linecap:butt;stroke-linejoin:miter;enable-background:accumulate;stop-color:#000000;stop-opacity:1;opacity:1"
+     d="M 12,7.25 A 0.75,0.75 0 0 0 11.25,8 v 4 A 0.75,0.75 0 0 0 12,12.75 0.75,0.75 0 0 0 12.75,12 V 8 A 0.75,0.75 0 0 0 12,7.25 Z"
+     id="line1" />
+  <path
+     style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#000000;stroke:none;stroke-linecap:butt;stroke-linejoin:miter;enable-background:accumulate;stop-color:#000000;stop-opacity:1;opacity:1"
+     d="M 12,15.25 A 0.75,0.75 0 0 0 11.25,16 0.75,0.75 0 0 0 12,16.75 h 0.0098 a 0.75,0.75 0 0 0 0.75,-0.75 0.75,0.75 0 0 0 -0.75,-0.75 z"
+     id="line2" />
+</svg>

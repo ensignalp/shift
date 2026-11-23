@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- @license lucide-static v1.57.0 - ISC -->
+
+<svg
+   class="lucide lucide-sun"
+   width="24"
+   height="24"
+   viewBox="0 0 24 24"
+   fill="none"
+   stroke="currentColor"
+   stroke-width="1.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   version="1.1"
+   id="svg8"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs8" />
+  <path
+     style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#000000;stroke:none;stroke-linecap:butt;stroke-linejoin:miter;enable-background:accumulate;stop-color:#000000;stop-opacity:1;opacity:1"
+     d="m 12,7.25 c -2.6144691,0 -4.75,2.1355309 -4.75,4.75 0,2.614469 2.1355309,4.75 4.75,4.75 2.614469,0 4.75,-2.135531 4.75,-4.75 0,-2.6144691 -2.135531,-4.75 -4.75,-4.75 z m 0,1.5 c 1.803809,0 3.25,1.446191 3.25,3.25 0,1.803809 -1.446191,3.25 -3.25,3.25 -1.803809,0 -3.25,-1.446191 -3.25,-3.25 0,-1.803809 1.446191,-3.25 3.25,-3.25 z"
+     id="circle1" />
+  <path
+     style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#000000;stroke:none;stroke-linecap:butt;stroke-linejoin:miter;enable-background:accumulate;stop-color:#000000;stop-opacity:1;opacity:1"
+     d="M 12,1.25 A 0.75,0.75 0 0 0 11.25,2 V 4 A 0.75,0.75 0 0 0 12,4.75 0.75,0.75 0 0 0 12.75,4 V 2 A 0.75,0.75 0 0 0 12,1.25 Z"
+     id="path1" />
+  <path
+     style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#000000;stroke:none;stroke-linecap:butt;stroke-linejoin:miter;enable-background:accumulate;stop-color:#000000;stop-opacity:1;opacity:1"
+     d="M 12,19.25 A 0.75,0.75 0 0 0 11.25,20 v 2 A 0.75,0.75 0 0 0 12,22.75 0.75,0.75 0 0 0 12.75,22 V 20 A 0.75,0.75 0 0 0 12,19.25 Z"
+     id="path2" />
+  <path
+     style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#000000;stroke:none;stroke-linecap:butt;stroke-linejoin:miter;enable-background:accumulate;stop-color:#000000;stop-opacity:1;opacity:1"
+     d="m 4.4003906,4.4003906 a 0.75,0.75 0 0 0 0,1.0605469 l 1.4101563,1.4101562 a 0.75,0.75 0 0 0 1.0605468,0 0.75,0.75 0 0 0 0,-1.0605468 L 5.4609375,4.4003906 a 0.75,0.75 0 0 0 -1.0605469,0 z"
+     id="path3" />
+  <path
+     style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#000000;stroke:none;stroke-linecap:butt;stroke-linejoin:miter;enable-background:accumulate;stop-color:#000000;stop-opacity:1;opacity:1"
+     d="m 17.660156,16.910156 a 0.75,0.75 0 0 0 -0.53125,0.21875 0.75,0.75 0 0 0 0,1.060547 l 1.410156,1.410156 a 0.75,0.75 0 0 0 1.060547,0 0.75,0.75 0 0 0 0,-1.060547 l -1.410156,-1.410156 a 0.75,0.75 0 0 0 -0.529297,-0.21875 z"
+     id="path4" />
+  <path
+     style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#000000;stroke:none;stroke-linecap:butt;stroke-linejoin:miter;enable-background:accumulate;stop-color:#000000;stop-opacity:1;opacity:1"
+     d="M 2,11.25 A 0.75,0.75 0 0 0 1.25,12 0.75,0.75 0 0 0 2,12.75 H 4 A 0.75,0.75 0 0 0 4.75,12 0.75,0.75 0 0 0 4,11.25 Z"
+     id="path5" />
+  <path
+     style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#000000;stroke:none;stroke-linecap:butt;stroke-linejoin:miter;enable-background:accumulate;stop-color:#000000;stop-opacity:1;opacity:1"
+     d="M 20,11.25 A 0.75,0.75 0 0 0 19.25,12 0.75,0.75 0 0 0 20,12.75 h 2 A 0.75,0.75 0 0 0 22.75,12 0.75,0.75 0 0 0 22,11.25 Z"
+     id="path6" />
+  <path
+     style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#000000;stroke:none;stroke-linecap:butt;stroke-linejoin:miter;enable-background:accumulate;stop-color:#000000;stop-opacity:1;opacity:1"
+     d="m 5.8105469,17.128906 -1.4101563,1.410156 a 0.75,0.75 0 0 0 0,1.060547 0.75,0.75 0 0 0 1.0605469,0 l 1.4101562,-1.410156 a 0.75,0.75 0 0 0 0,-1.060547 0.75,0.75 0 0 0 -1.0605468,0 z"
+     id="path7" />
+  <path
+     style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#000000;stroke:none;stroke-linecap:butt;stroke-linejoin:miter;enable-background:accumulate;stop-color:#000000;stop-opacity:1;opacity:1"
+     d="m 19.070312,4.1796875 a 0.75,0.75 0 0 0 -0.53125,0.2207031 l -1.410156,1.4101563 a 0.75,0.75 0 0 0 0,1.0605468 0.75,0.75 0 0 0 1.060547,0 l 1.410156,-1.4101562 a 0.75,0.75 0 0 0 0,-1.0605469 0.75,0.75 0 0 0 -0.529297,-0.2207031 z"
+     id="path8" />
+</svg>
